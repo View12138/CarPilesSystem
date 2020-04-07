@@ -1,27 +1,16 @@
-﻿using System;
+﻿using System.Web.Script.Serialization;
+using CarPilesSystem.Commons;
+using Newtonsoft.Json;
 
 namespace CarPilesSystem.Models
 {
-    /// <summary>
-    /// 标记此属性为主键
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
-    public class KeyAttribute : Attribute { }
-    /// <summary>
-    /// 数据库实体接口
-    /// </summary>
-    public interface IModel
-    {
-        /// <summary>
-        /// 实体对应的表名
-        /// </summary>
-        string _TableName { get; }
-    }
     /// <summary>
     /// cps_user 表对应的实体
     /// </summary>
     public class Cps_User : IModel
     {
+        [JsonIgnore]
+        [ScriptIgnore]
         public string _TableName => "cps_user";
         [Key]
         public long Id { get; set; }
@@ -36,6 +25,8 @@ namespace CarPilesSystem.Models
 
     public class Cps_Pile : IModel
     {
+        [JsonIgnore]
+        [ScriptIgnore]
         public string _TableName => "cps_pile";
         [Key]
         public long Id { get; set; }
@@ -46,6 +37,8 @@ namespace CarPilesSystem.Models
 
     public class Cps_Admin : IModel
     {
+        [JsonIgnore]
+        [ScriptIgnore]
         public string _TableName => "cps_admin";
         [Key]
         public long Id { get; set; }

@@ -138,6 +138,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commons\CpsController.cs" />
+    <Compile Include="Commons\IModel.cs" />
+    <Compile Include="Commons\KeyAttribute.cs" />
+    <Compile Include="Commons\SQLiteHandle.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
