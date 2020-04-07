@@ -254,7 +254,7 @@
                     <span class="mui-icon mui-icon-close"></span>
                     <span>退出登录</span>
                 </button>
-                <button class="box-outlined">
+                <button class="box-outlined" onclick="AdminPiles()">
                     <span class="mui-icon mui-icon-contact"></span>
                     <span>管理后台</span>
                 </button>
@@ -284,7 +284,7 @@
                         </button>
                     </li>
                     <li class="mui-table-view-cell">
-                        <button class="list-button">
+                        <button class="list-button" onclick="AdminPiles()">
                             <span class="mui-icon mui-icon-contact"></span>
                             <span>管理后台</span>
                         </button>
@@ -506,6 +506,10 @@
             gdMap.add(marker);
             console.log(marker);
             gdMap.setFitView([nowMarker, marker]);
+        }
+
+        function AdminPiles() {
+            window.location.href="/Home/Piles"
         }
     </script>
 </body>

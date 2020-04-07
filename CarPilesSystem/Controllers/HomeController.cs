@@ -37,11 +37,11 @@ namespace CarPilesSystem.Controllers
         /// 充电桩管理 - 视图
         /// </summary>
         /// <returns></returns>
-        public ActionResult Piels() => View();
+        public ActionResult Piles() => View();
         #endregion
 
         #region API
-        #region 登录/注册相关
+        #region 用户登录/注册相关
         /// <summary>
         /// 登录
         /// </summary>
@@ -100,7 +100,7 @@ namespace CarPilesSystem.Controllers
         }
         #endregion
 
-        #region 充电桩管理API
+        #region 后台管理相关
 
         #endregion
         #endregion
