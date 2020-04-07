@@ -25,7 +25,7 @@ namespace CarPilesSystem.Controllers
         {
             ViewBag.About = "基于互联网+智能充电引导系统，用户可以通过手机实现充电装置状态查询、定位导航、充电预约及智能充电与充电装置锁定等功能。后台通过内置在汽车中已经连接的车载数据采集系统采集相关数据，并发回给服务器端，服务器端就可从远端实时监控汽车的电力状态。";
             ViewBag.Merit = "基于互联网云平台的智能充电导航系统能让车主及时了解全城各充电桩状态、自动寻找空闲充电桩、并能实时预约空闲充电桩，不仅将大大减少车主在寻找充电桩.上浪费的时间与进行充电前的排队时间，而且能有效提高充电桩利用率，对解决充电站占地过大的城市规划问题起到积极作用。";
-
+            ViewBag.XuQingDian = "123";
             return View();
         }
         /// <summary>
@@ -33,9 +33,15 @@ namespace CarPilesSystem.Controllers
         /// </summary>
         /// <returns></returns>
         public ActionResult Contact() => View();
+        /// <summary>
+        /// 充电桩管理 - 视图
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult Piels() => View();
         #endregion
 
         #region API
+        #region 登录/注册相关
         /// <summary>
         /// 登录
         /// </summary>
@@ -92,6 +98,11 @@ namespace CarPilesSystem.Controllers
                 }
             }
         }
+        #endregion
+
+        #region 充电桩管理API
+
+        #endregion
         #endregion
     }
 }
