@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
+using System.Collections.Generic;
 using CarPilesSystem.Commons;
 using CarPilesSystem.Models;
+using View.SQLite.Handle;
 
 namespace CarPilesSystem.Controllers
 {

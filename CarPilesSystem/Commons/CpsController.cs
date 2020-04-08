@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
 using System.Web.Mvc;
 using CarPilesSystem.Models;
-using Newtonsoft.Json;
+using View.SQLite.Handle;
 
 namespace CarPilesSystem.Commons
 {
