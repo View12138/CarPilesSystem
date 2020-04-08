@@ -77,7 +77,7 @@ namespace CarPilesSystem.Commons
         }
 
         /// <summary>
-        /// 更改密码，或为开放数据库设置密码。
+        /// 更改密码。
         /// </summary>
         /// <param name="newPassword">新密码</param>
         public void ChangePassword(string newPassword)
@@ -109,6 +109,32 @@ namespace CarPilesSystem.Commons
         }
 
         /// <summary>
+        /// 提供事务支持
+        /// </summary>
+        /// <param name="action">要执行的操作</param>
+        /// <returns>事务执行是否成功</returns>
+        public bool RunTransaction(Action<SQLiteTransaction> action)
+        {
+            bool autoClosed = State != ConnectionState.Open;
+            if (autoClosed) { Open(); }
+            var trans = Connection.BeginTransaction();
+            bool result;
+            try
+            {
+                action(trans);
+                trans.Commit();
+                result = true;
+            }
+            catch (Exception)
+            {
+                trans.Rollback();
+                result = false;
+            }
+            if (autoClosed) { Close(); }
+            return result;
+        }
+
+        /// <summary>
         /// 插入一个实体
         /// <para>适用于自增主键的模型</para>
         /// </summary>
@@ -116,7 +142,38 @@ namespace CarPilesSystem.Commons
         /// <typeparam name="T">模型</typeparam>
         /// <param name="model">实体模型</param>
         /// <returns></returns>
-        public int Insert<T>(T model) where T : IModel, new() => Insert(model, true);
+        public bool Insert<T>(T model) where T : IModel, new() => Insert(model, true, null, out _);
+        /// <summary>
+        /// 插入一个实体
+        /// <para>适用于自增主键的模型</para>
+        /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <typeparam name="T">模型</typeparam>
+        /// <param name="model">实体模型</param>
+        /// <param name="id">成功插入后的Id</param>
+        /// <returns></returns>
+        public bool Insert<T>(T model, out long id) where T : IModel, new() => Insert(model, true, null, out id);
+        /// <summary>
+        /// 插入一个实体
+        /// <para>适用于自增主键的模型</para>
+        /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <typeparam name="T">模型</typeparam>
+        /// <param name="model">实体模型</param>
+        /// <param name="trans">事务支持</param>
+        /// <returns></returns>
+        public bool Insert<T>(T model, SQLiteTransaction trans) where T : IModel, new() => Insert(model, true, trans, out _);
+        /// <summary>
+        /// 插入一个实体
+        /// <para>适用于自增主键的模型</para>
+        /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <typeparam name="T">模型</typeparam>
+        /// <param name="model">实体模型</param>
+        /// <param name="trans">事务支持</param>
+        /// <param name="id">成功插入后的Id</param>
+        /// <returns></returns>
+        public bool Insert<T>(T model, SQLiteTransaction trans, out long id) where T : IModel, new() => Insert(model, true, trans, out id);
         /// <summary>
         /// 插入一个实体
         /// <para>若要设置主键的值，则设置 <c>autoKey = false</c></para>
@@ -125,13 +182,14 @@ namespace CarPilesSystem.Commons
         /// <typeparam name="T">模型</typeparam>
         /// <param name="model">实体模型</param>
         /// <param name="autoKey">是否忽略被标记为 <c>[Key]</c> 的属性。</param>
+        /// <param name="trans">事务支持</param>
         /// <returns></returns>
-        public int Insert<T>(T model, bool autoKey) where T : IModel, new()
+        public bool Insert<T>(T model, bool autoKey, SQLiteTransaction trans, out long id) where T : IModel, new()
         {
             if (model == null)
             { throw new ArgumentNullException("model", "The arameter cannot be null."); }
 
-            return RunAutoClose(() =>
+            bool result = RunAutoClose(() =>
             {
                 PropertyInfo[] properties = model.GetType().GetProperties();
                 List<string> _fieldNames = new List<string>();
@@ -152,9 +210,18 @@ namespace CarPilesSystem.Commons
                 string fields = string.Join(",", _fieldNames.ToArray());
                 string values = string.Join(",", _fieldValues.ToArray());
                 string sql = $"insert into {model._TableName} ({fields}) values ({values})";
-                SQLiteCommand command = new SQLiteCommand(sql, Connection);
-                return command.ExecuteNonQuery();
+                using (SQLiteCommand command = new SQLiteCommand(sql, Connection))
+                {
+                    if (trans != null)
+                    { command.Transaction = trans; }
+                    return command.ExecuteNonQuery() > 0;
+                }
             });
+            if (result)
+            { id = Connection.LastInsertRowId; }
+            else
+            { id = -1; }
+            return result;
         }
 
         /// <summary>
@@ -165,7 +232,17 @@ namespace CarPilesSystem.Commons
         /// <typeparam name="T">模型</typeparam>
         /// <param name="model">实体模型</param>
         /// <returns></returns>
-        public bool Delete<T>(T model) where T : IModel, new() => Delete(model, false);
+        public bool Delete<T>(T model) where T : IModel, new() => Delete(model, false, null);
+        /// <summary>
+        /// 删除一个实体
+        /// <para>当属性为空时，不作为判断条件</para>
+        /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <typeparam name="T">模型</typeparam>
+        /// <param name="model">实体模型</param>
+        /// <param name="trans">事务支持</param>
+        /// <returns></returns>
+        public bool Delete<T>(T model, SQLiteTransaction trans) where T : IModel, new() => Delete(model, false, trans);
         /// <summary>
         /// 删除一个实体
         /// </summary>
@@ -173,8 +250,9 @@ namespace CarPilesSystem.Commons
         /// <typeparam name="T">模型</typeparam>
         /// <param name="model">实体模型</param>
         /// <param name="nullProperty">是否检查空属性</param>
+        /// <param name="trans">事务支持</param>
         /// <returns></returns>
-        public bool Delete<T>(T model, bool nullProperty) where T : IModel, new()
+        public bool Delete<T>(T model, bool nullProperty, SQLiteTransaction trans) where T : IModel, new()
         {
             if (model == null)
             { throw new ArgumentNullException("model", "The arameter cannot be null."); }
@@ -197,8 +275,12 @@ namespace CarPilesSystem.Commons
                 }
                 string condition = string.Join(" AND ", _conditions.ToArray());
                 string sql = $"delete from {model._TableName} where {condition}";
-                SQLiteCommand command = new SQLiteCommand(sql, Connection);
-                return command.ExecuteNonQuery() > 0;
+                using (SQLiteCommand command = new SQLiteCommand(sql, Connection))
+                {
+                    if (trans != null)
+                    { command.Transaction = trans; }
+                    return command.ExecuteNonQuery() > 0;
+                }
             });
         }
 
@@ -282,7 +364,16 @@ namespace CarPilesSystem.Commons
         /// <typeparam name="T">模型</typeparam>
         /// <param name="model">实体模型</param>
         /// <returns></returns>
-        public bool Update<T>(T model) where T : IModel, new()
+        public bool Update<T>(T model) where T : IModel, new() => Update(model, null);
+        /// <summary>
+        /// 更新实体
+        /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <typeparam name="T">模型</typeparam>
+        /// <param name="model">实体模型</param>
+        /// <param name="trans">事务支持</param>
+        /// <returns></returns>
+        public bool Update<T>(T model, SQLiteTransaction trans) where T : IModel, new()
         {
             if (model == null)
             { throw new ArgumentNullException("model", "The arameter cannot be null."); }
@@ -315,11 +406,14 @@ namespace CarPilesSystem.Commons
                 if (string.IsNullOrEmpty(condition)) { throw new ArgumentException("更新的实体必须具有主键"); }
                 string setValue = string.Join(",", _setValues.ToArray());
                 string sql = $"update {model._TableName} set {setValue} where {condition}";
-                SQLiteCommand command = new SQLiteCommand(sql, Connection);
-                return command.ExecuteNonQuery() > 0;
+                using (SQLiteCommand command = new SQLiteCommand(sql, Connection))
+                {
+                    if (trans != null)
+                    { command.Transaction = trans; }
+                    return command.ExecuteNonQuery() > 0;
+                }
             });
         }
-
 
         /// <summary>
         /// 释放数据库连接
