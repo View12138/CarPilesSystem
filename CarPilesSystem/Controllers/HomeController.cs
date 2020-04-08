@@ -83,7 +83,7 @@ namespace CarPilesSystem.Controllers
                 var _user = db.Query<Cps_User>($"where `UserName` = '{user.UserName}'").FirstOrDefault();
                 if (_user == null)
                 {
-                    if (db.Insert(user) > 0)
+                    if (db.Insert(user))
                     {
                         return Success(user, "注册成功，可以登录。");
                     }
