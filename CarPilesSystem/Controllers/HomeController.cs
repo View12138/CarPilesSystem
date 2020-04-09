@@ -99,7 +99,7 @@ namespace CarPilesSystem.Controllers
             }
         }
         /// <summary>
-        /// 获取指定点附近的点
+        /// 获取指定点附近的充电桩
         /// </summary>
         /// <param name="longitude">指定点的纬度</param>
         /// <param name="latitude">指定点的经度</param>
@@ -133,7 +133,7 @@ namespace CarPilesSystem.Controllers
         /// <param name="latitude">纬度</param>
         /// <param name="name">充电桩名称</param>
         /// <returns></returns>
-        public ActionResult CreateLngLat(string longitude, string latitude, string name = "cps 充电桩")
+        public ActionResult CreatePile(string longitude, string latitude, string name = "cps 充电桩")
         {
             using (var db = this.BuildDB())
             {
