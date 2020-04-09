@@ -48,7 +48,15 @@ namespace CarPilesSystem.Commons
         /// <param name="data">数据</param>
         /// <param name="message">消息</param>
         /// <returns></returns>
-        public JsonResult Success<T>(T data, string message = "")
+        public JsonResult Success<T>(T data) => Success(data, string.Empty);
+        /// <summary>
+        /// 成功
+        /// </summary>
+        /// <typeparam name="T">返回的数据类型</typeparam>
+        /// <param name="data">数据</param>
+        /// <param name="message">消息</param>
+        /// <returns></returns>
+        public JsonResult Success<T>(T data, string message)
         {
             return Json(new Result<T>()
             {
@@ -59,15 +67,23 @@ namespace CarPilesSystem.Commons
         }
         /// <summary>
         /// 失败
+        /// <para>状态为 -1</para>
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <returns></returns>
+        public JsonResult Error(string message) => Error(0, message);
+        /// <summary>
+        /// 失败
         /// </summary>
         /// <param name="state">状态</param>
         /// <param name="message">消息</param>
         /// <returns></returns>
-        public JsonResult Error(int state, string message = "")
+        public JsonResult Error(int state, string message)
         {
-            return Json(new
+            return Json(new Result<object>()
             {
                 State = state == 0 ? -1 : state,
+                Data = null,
                 Message = message,
             });
         }

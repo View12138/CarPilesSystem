@@ -20,6 +20,7 @@
     <script src="~/ViewScripts/Strings.js"></script>
 
     <style>
+
         #root {
             margin: 0;
             padding: 0;
@@ -242,7 +243,7 @@
                 <span style="font-weight:600;">新能源汽车充电桩导航系统</span>
             </a>
             <div style="display:flex;align-items:center;">
-                <button class="box-outlined" onclick="SetPilesLocation()">
+                <button class="box-outlined GetNearBy" disabled onclick="GetNearByPiles()">
                     <span class="mui-icon mui-icon-reload"></span>
                     <span>探索附近</span>
                 </button>
@@ -250,7 +251,7 @@
                     <span class="mui-icon mui-icon-paperplane"></span>
                     <span>开始导航</span>
                 </button>
-                <button class="box-outlined">
+                <button class="box-outlined" onclick="SignOut()">
                     <span class="mui-icon mui-icon-close"></span>
                     <span>退出登录</span>
                 </button>
@@ -266,7 +267,7 @@
                 <!-- 可选择菜单 -->
                 <ul class="mui-table-view">
                     <li class="mui-table-view-cell" style="padding:0;">
-                        <button class="list-button" onclick="SetPilesLocation()">
+                        <button class="list-button GetNearBy" disabled onclick="GetNearByPiles()">
                             <span class="mui-icon mui-icon-reload"></span>
                             <span>探索附近</span>
                         </button>
@@ -277,7 +278,7 @@
                             <span>开始导航</span>
                         </button>
                     </li>
-                    <li class="mui-table-view-cell">
+                    <li class="mui-table-view-cell" onclick="SignOut()">
                         <button class="list-button">
                             <span class="mui-icon mui-icon-close"></span>
                             <span>退出登录</span>
@@ -307,6 +308,9 @@
         let gdMap = null;
         let gdLocation = null;
         let nowMarker = null;
+        let nowPostion = null;
+        /** 附近充电桩列表 */
+        let PilesMarker = [];
         $(function () {
             document.body.onresize = (ev) => {
                 MenuSet();
@@ -484,6 +488,8 @@
                             nowMarker = new AMap.Marker({
                                 position: result.position,
                             });
+                            nowPostion = result.position;
+                            $(".GetNearBy").prop("disabled", false)
                             mui.toast("定位成功。");
                         }
                         else {
@@ -497,19 +503,55 @@
             });
         };
 
+        function SignOut() {
+            Caches.Password = "";
+            $("#input-password").val(Caches.Password);
+            SetLogin(false);
+        }
+
         /** 设置附近充电桩 */
-        function SetPilesLocation() {
+        function GetNearByPiles(distance = 5001) {
+            console.log(nowMarker);
             // 创建点覆盖物
-            var marker = new AMap.Marker({
-                position: new AMap.LngLat(102.671267, 25.032055),
-            });
-            gdMap.add(marker);
-            console.log(marker);
-            gdMap.setFitView([nowMarker, marker]);
+            mui.toast("正在获取附近充电桩...")
+            $.ajax({
+                url: "/Home/GetNearbyPiles",
+                data: {
+                    longitude: nowPostion.lng,
+                    latitude: nowPostion.lat,
+                    distance: distance,
+                },
+                type: "post",
+                success: (res) => {
+                    console.log(res);
+                    mui.toast(res.Message)
+                    if (res.State == 0) {
+                        PilesMarker = [];
+                        for (var i = 0; i < res.Data.length; i++) {
+                            PilesMarker.push(new AMap.Marker({
+                                position: new AMap.LngLat(res.Data[i].Longitude, res.Data[i].Latitude),
+                            }));
+                            gdMap.add(PilesMarker[i]);
+                        }
+                    }
+                    //var marker = new AMap.Marker({
+                    //    position: new AMap.LngLat(102.671267, 25.032055),
+                    //});
+                    //gdMap.add(marker);
+                    //console.log(marker);
+                    //gdMap.setFitView([nowMarker, marker]);
+                },
+                error: () => {
+
+                },
+                complete: () => {
+
+                }
+            })
         }
 
         function AdminPiles() {
-            window.location.href="/Home/Piles"
+            window.location.href = "/Home/Piles"
         }
     </script>
 </body>
