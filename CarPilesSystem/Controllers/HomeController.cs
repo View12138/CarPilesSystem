@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Web.Mvc;
 using System.Collections.Generic;
 using CarPilesSystem.Commons;
 using CarPilesSystem.Models;
 using View.SQLite.Handle;
+using CarPilesSystem.Models.Imodels;
 
 namespace CarPilesSystem.Controllers
 {
@@ -50,7 +52,7 @@ namespace CarPilesSystem.Controllers
         {
             using (var db = this.BuildDB())
             {
-                var user = db.Query<Cps_User>($"where `UserName` = '{username}'").FirstOrDefault();
+                var user = db.Query<User>($"where `UserName` = '{username}'").FirstOrDefault();
                 if (user == null)
                 {
                     return Error(-1, "用户名未注册。");
@@ -70,7 +72,7 @@ namespace CarPilesSystem.Controllers
         /// </summary>
         /// <param name="user">用户</param>
         /// <returns></returns>
-        public ActionResult SignUp(Cps_User user)
+        public ActionResult SignUp(User user)
         {
             using (var db = this.BuildDB())
             {
@@ -78,7 +80,7 @@ namespace CarPilesSystem.Controllers
                 {
                     return Error(-1, "请核对必填字段。");
                 }
-                var _user = db.Query<Cps_User>($"where `UserName` = '{user.UserName}'").FirstOrDefault();
+                var _user = db.Query<User>($"where `UserName` = '{user.UserName}'").FirstOrDefault();
                 if (_user == null)
                 {
                     if (db.Insert(user))
@@ -96,10 +98,73 @@ namespace CarPilesSystem.Controllers
                 }
             }
         }
+        /// <summary>
+        /// 获取指定点附近的点
+        /// </summary>
+        /// <param name="longitude">指定点的纬度</param>
+        /// <param name="latitude">指定点的经度</param>
+        /// <param name="distance">与指定点的距离 :m</param>
+        /// <returns></returns>
+        public ActionResult GetNearbyPiles(string longitude, string latitude, double distance = 5000)
+        {
+            LngLat lngLat = new LngLat(longitude, latitude);
+            DMS top = new DMS(lngLat.Latitude.ToDouble() + LngLat.MeterToLat(distance));
+            DMS bottom = new DMS(lngLat.Latitude.ToDouble() - LngLat.MeterToLat(distance));
+            DMS left = new DMS(lngLat.Longitude.ToDouble() - LngLat.MeterToLng(distance, lngLat.Latitude.ToDouble()));
+            DMS right = new DMS(lngLat.Longitude.ToDouble() + LngLat.MeterToLng(distance, lngLat.Latitude.ToDouble()));
+
+            using (var db = this.BuildDB())
+            {
+                string condition = $"where Longitude > {left} and Longitude < {right} and Latitude > {bottom} and Latitude < {top}";
+                List<Pile> piles = db.Query<Pile>(condition);
+                if (piles != null && piles.Count > 0)
+                { return Success(piles, "获取充电桩成功"); }
+                else
+                { return Error("附近没有充电桩"); }
+            }
+        }
         #endregion
 
         #region 后台管理相关
-
+        /// <summary>
+        /// 创建一个充电桩
+        /// </summary>
+        /// <param name="longitude">经度</param>
+        /// <param name="latitude">纬度</param>
+        /// <param name="name">充电桩名称</param>
+        /// <returns></returns>
+        public ActionResult CreateLngLat(string longitude, string latitude, string name = "cps 充电桩")
+        {
+            using (var db = this.BuildDB())
+            {
+                var pile = new Pile() { Longitude = longitude, Latitude = latitude, Name = name };
+                if (db.Insert(pile, out long id))
+                {
+                    pile.Id = id;
+                    return Success(pile, "创建充电桩成功");
+                }
+                else
+                {
+                    return Error("创建充电桩失败");
+                }
+            }
+        }
+        /// <summary>
+        /// 获取计价表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetPrices()
+        {
+            using (var db = this.BuildDB())
+            {
+                var prices = db.Query<Price>();
+                if (prices != null && prices.Count > 0)
+                { return Success(prices, "获取计价表成功"); }
+                else
+                { return Error("获取计价表失败"); }
+            }
+        }
         #endregion
         #endregion
     }

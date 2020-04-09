@@ -116,8 +116,8 @@
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="View.SQLite.Handle, Version=0.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\View.SQLite.Handle.0.0.2\lib\netstandard2.0\View.SQLite.Handle.dll</HintPath>
+    <Reference Include="View.SQLite.Handle, Version=0.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\View.SQLite.Handle.0.0.3\lib\netstandard2.0\View.SQLite.Handle.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
@@ -135,11 +135,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commons\CpsController.cs" />
+    <Compile Include="Commons\DMS.cs" />
+    <Compile Include="Commons\LngLat.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Models.cs" />
+    <Compile Include="Models\IModels\Admin.cs" />
+    <Compile Include="Models\IModels\Pile.cs" />
+    <Compile Include="Models\IModels\Price.cs" />
+    <Compile Include="Models\IModels\User.cs" />
     <Compile Include="Models\Result.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
