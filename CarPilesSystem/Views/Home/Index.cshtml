@@ -226,8 +226,8 @@
                     </div>
                     <div class="mui-col-sm-6 mui-col-xs-6">
                         <div class="mui-button-row">
-                            <button id="sign-up" type="button" class="mui-btn">注册</button>
-                            <button id="sign-in" type="button" class="mui-btn mui-btn-primary">登录</button>
+                            <button id="sign-up" type="button" onclick="SignUp()" class="mui-btn">注册</button>
+                            <button id="sign-in" type="button" onclick="SignIn()" class="mui-btn mui-btn-primary">登录</button>
                         </div>
                     </div>
                 </div>
@@ -247,7 +247,7 @@
                     <span class="mui-icon mui-icon-reload"></span>
                     <span>探索附近</span>
                 </button>
-                <button class="box-outlined">
+                <button class="box-outlined" disabled onclick="StartNavigation()">
                     <span class="mui-icon mui-icon-paperplane"></span>
                     <span>开始导航</span>
                 </button>
@@ -273,7 +273,7 @@
                         </button>
                     </li>
                     <li class="mui-table-view-cell">
-                        <button class="list-button">
+                        <button class="list-button" disabled onclick="StartNavigation()">
                             <span class="mui-icon mui-icon-paperplane"></span>
                             <span>开始导航</span>
                         </button>
@@ -291,12 +291,12 @@
                         </button>
                     </li>
                 </ul>
-                <!-- 取消菜单 -->
+                <!-- 关闭菜单 -->
                 <ul class="mui-table-view">
                     <li class="mui-table-view-cell">
-                        <button id="close-menu" class="list-button">
+                        <button class="list-button" onclick="HideMenu()">
                             <b><span class="mui-icon mui-icon-arrowdown" style="margin-right:10px;"></span></b>
-                            <span><b>取 消</b></span>
+                            <span><b>关 闭</b></span>
                         </button>
                     </li>
                 </ul>
@@ -306,19 +306,21 @@
 
     <script>
         let gdMap = null;
+        /** 高德定位控件 */
         let gdLocation = null;
+        /** 当前位置标记 */
         let nowMarker = null;
+        /** 当前位置坐标 */
         let nowPostion = null;
         /** 附近充电桩列表 */
         let PilesMarker = [];
+
+        /** 加载完成后 */
         $(function () {
-            document.body.onresize = (ev) => {
+            document.body.onresize = function () {
                 MenuSet();
             }
             MenuSet();
-            $("#close-menu").click(function () {
-                mui('#menu').popover('hide');
-            });
 
             let isLogin = false;
             $("#input-username").val(Caches.UserName);
@@ -327,109 +329,20 @@
                 isLogin = true;
             }
             SetLogin(isLogin);
-
-            // 点击注册
-            $("#sign-up").click(function () {
-                if ($(".sign-up-box").css("display") == "none") {
-                    $(".sign-up-box").css("display", "block");
-                }
-                else {
-                    // 提交注册
-                    let username = $("#input-username").val();
-                    let password = $("#input-password").val();
-                    let name = $("#input-name").val();
-                    let sex = $("input[name='radio-sex']:checked").val();
-                    let phone = $("#input-phone").val();
-                    let email = $("#input-email").val();
-
-                    if (Strings.IsNulllOrEmpty(username)) {
-                        mui.toast("请输入用户名。");
-                    }
-                    else if (Strings.IsNulllOrEmpty(password)) {
-                        mui.toast("请输入密码");
-                    }
-                    else if (!Strings.IsPhoneNumber(phone)) {
-                        mui.toast("请输入正确的手机号码");
-                    }
-                    else {
-                        mui.showLoading("正在注册新用户...")
-                        $.ajax({
-                            type: "post",
-                            url: "/Home/SignUp",
-                            data: {
-                                user: {
-                                    UserName: username,
-                                    Password: password,
-                                    sex: sex,
-                                    Name: name,
-                                    Phone: phone,
-                                    Email: email,
-                                }
-                            },
-                            success: (res) => {
-                                mui.toast(res.Message);
-                                if (res.State == 0) {
-                                    $(".sign-up-box").css("display", "none");
-                                }
-                            },
-                            error: () => {
-                                mui.toast("网络错误，请稍后重试。");
-                            },
-                            complete: () => {
-                                mui.hideLoading();
-                            }
-                        });
-                    }
-                }
-            });
-
-            // 点击登录
-            $("#sign-in").click(function () {
-                if ($(".sign-up-box").css("display") == "block") {
-                    $(".sign-up-box").css("display", "none");
-                }
-                else {
-                    // 提交登录
-                    let username = $("#input-username").val();
-                    let password = $("#input-password").val();
-                    if (Strings.IsNulllOrEmpty(username)) {
-                        mui.toast("请输入用户名。");
-                    }
-                    else if (Strings.IsNulllOrEmpty(password)) {
-                        mui.toast("请输入密码。");
-                    }
-                    else {
-                        mui.showLoading("正在登录...");
-                        $.ajax({
-                            type: "post",
-                            url: "/Home/SignIn",
-                            data: { username: username, password: password },
-                            success: (res) => {
-                                mui.toast(res.Message);
-                                if (res.State == 0) {
-                                    let remeber = $("#input-remenber").prop("checked");
-                                    console.log(remeber);
-                                    Caches.UserName = res.Data.UserName;
-                                    if (remeber) {
-                                        Caches.Password = res.Data.Password;
-                                    }
-                                    else {
-                                        Caches.Password = "";
-                                    }
-                                    SetLogin(true);
-                                }
-                            },
-                            error: () => {
-                                mui.toast("网络错误，请稍后重试");
-                            },
-                            complete: () => {
-                                mui.hideLoading();
-                            }
-                        });
-                    }
-                }
-            });
         });
+
+        /** 设置菜单显示模式 */
+        function MenuSet() {
+            if (document.body.clientWidth < 720) {
+                $(".box-outlined").css("display", "none");
+                $("#menu-set").css("display", "block");
+            }
+            else {
+                $(".box-outlined").css("display", "block");
+                $("#menu-set").css("display", "none");
+                HideMenu();
+            }
+        }
 
         /** 设置登录状态 */
         function SetLogin(isLogin) {
@@ -441,19 +354,6 @@
             else {
                 $(".login-true").css("display", "none");
                 $(".login-false").css("display", "flex");
-            }
-        }
-
-        /** 设置菜单显示模式 */
-        function MenuSet() {
-            if (document.body.clientWidth < 720) {
-                $(".box-outlined").css("display", "none");
-                $("#menu-set").css("display", "block");
-            }
-            else {
-                $(".box-outlined").css("display", "block");
-                $("#menu-set").css("display", "none");
-                mui('#menu').popover('hide');
             }
         }
 
@@ -481,41 +381,117 @@
                 })
                 // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
                 gdMap.addControl(gdLocation);
-                mui.toast("正在获取当前位置...")
-                gdLocation.getCurrentPosition(
-                    (state, result) => {
-                        if (state == "complete") {
-                            nowMarker = new AMap.Marker({
-                                position: result.position,
-                            });
-                            nowPostion = result.position;
-                            $(".GetNearBy").prop("disabled", false)
-                            mui.toast("定位成功。");
-                        }
-                        else {
-                            mui.toast("定位失败，请允许网站访问您的位置信息。");
-                        }
-                    },
-                    () => {
-                        mui.toast("定位失败，请允许网站访问您的位置信息。");
-                    }
-                );
+                GetLocation();
             });
         };
 
-        function SignOut() {
-            Caches.Password = "";
-            $("#input-password").val(Caches.Password);
-            SetLogin(false);
+        /** 登录 */
+        function SignIn() {
+            if ($(".sign-up-box").css("display") == "block") {
+                $(".sign-up-box").css("display", "none");
+            }
+            else {
+                // 提交登录
+                let username = $("#input-username").val();
+                let password = $("#input-password").val();
+                if (Strings.IsNulllOrEmpty(username)) {
+                    mui.toast("请输入用户名。");
+                }
+                else if (Strings.IsNulllOrEmpty(password)) {
+                    mui.toast("请输入密码。");
+                }
+                else {
+                    mui.showLoading("正在登录...");
+                    $.ajax({
+                        type: "post",
+                        url: "/User/SignIn",
+                        data: { username: username, password: password },
+                        success: (res) => {
+                            mui.toast(res.Message);
+                            if (res.State == 0) {
+                                let remeber = $("#input-remenber").prop("checked");
+                                console.log(remeber);
+                                Caches.UserName = res.Data.UserName;
+                                if (remeber) {
+                                    Caches.Password = res.Data.Password;
+                                }
+                                else {
+                                    Caches.Password = "";
+                                }
+                                SetLogin(true);
+                            }
+                        },
+                        error: () => {
+                            mui.toast("网络错误，请稍后重试");
+                        },
+                        complete: () => {
+                            mui.hideLoading();
+                        }
+                    });
+                }
+            }
+        }
+        /** 注册 */
+        function SignUp() {
+            if ($(".sign-up-box").css("display") == "none") {
+                $(".sign-up-box").css("display", "block");
+            }
+            else {
+                // 提交注册
+                let username = $("#input-username").val();
+                let password = $("#input-password").val();
+                let name = $("#input-name").val();
+                let sex = $("input[name='radio-sex']:checked").val();
+                let phone = $("#input-phone").val();
+                let email = $("#input-email").val();
+
+                if (Strings.IsNulllOrEmpty(username)) {
+                    mui.toast("请输入用户名。");
+                }
+                else if (Strings.IsNulllOrEmpty(password)) {
+                    mui.toast("请输入密码");
+                }
+                else if (!Strings.IsPhoneNumber(phone)) {
+                    mui.toast("请输入正确的手机号码");
+                }
+                else {
+                    mui.showLoading("正在注册新用户...")
+                    $.ajax({
+                        type: "post",
+                        url: "/Admin/SignUp",
+                        data: {
+                            user: {
+                                UserName: username,
+                                Password: password,
+                                sex: sex,
+                                Name: name,
+                                Phone: phone,
+                                Email: email,
+                            }
+                        },
+                        success: (res) => {
+                            mui.toast(res.Message);
+                            if (res.State == 0) {
+                                $(".sign-up-box").css("display", "none");
+                            }
+                        },
+                        error: () => {
+                            mui.toast("网络错误，请稍后重试。");
+                        },
+                        complete: () => {
+                            mui.hideLoading();
+                        }
+                    });
+                }
+            }
         }
 
-        /** 设置附近充电桩 */
+        /** 菜单一、探索附近  获取附近充电桩 */
         function GetNearByPiles(distance = 5001) {
-            console.log(nowMarker);
-            // 创建点覆盖物
-            mui.toast("正在获取附近充电桩...")
+            HideMenu();
+            mui.showLoading("正在获取附近充电桩...")
             $.ajax({
-                url: "/Home/GetNearbyPiles",
+                url: "/User/GetNearbyPiles",
                 data: {
                     longitude: nowPostion.lng,
                     latitude: nowPostion.lat,
@@ -523,7 +499,6 @@
                 },
                 type: "post",
                 success: (res) => {
-                    console.log(res);
                     mui.toast(res.Message)
                     if (res.State == 0) {
                         PilesMarker = [];
@@ -542,16 +517,58 @@
                     //gdMap.setFitView([nowMarker, marker]);
                 },
                 error: () => {
-
+                    mui.toast("网络错误，请稍后重试");
                 },
                 complete: () => {
-
+                    mui.hideLoading();
                 }
             })
         }
-
+        /** 菜单二、开始导航  规划附近路线 */
+        function StartNavigation() {
+            HideMenu();
+        }
+        /** 菜单三、退出登录 返回登录页 */
+        function SignOut() {
+            HideMenu();
+            Caches.Password = "";
+            $("#input-password").val(Caches.Password);
+            SetLogin(false);
+        }
+        /** 菜单四、管理后台 跳转管理后台 */
         function AdminPiles() {
+            HideMenu();
             window.location.href = "/Home/Piles"
+        }
+
+        /** 定位 */
+        function GetLocation() {
+            mui.showLoading("正在获取当前位置...")
+            gdLocation.getCurrentPosition(
+                (state, result) => {
+                    mui.hideLoading();
+                    if (state == "complete") {
+                        nowMarker = new AMap.Marker({
+                            position: result.position,
+                        });
+                        nowPostion = result.position;
+                        $(".GetNearBy").prop("disabled", false)
+                        mui.toast("定位成功。");
+                    }
+                    else {
+                        mui.toast("定位失败，请允许网站访问您的位置信息。");
+                    }
+                },
+                () => {
+                    mui.hideLoading();
+                    mui.toast("定位失败，请允许网站访问您的位置信息。");
+                }
+            );
+        }
+
+        /** 隐藏菜单栏 */
+        function HideMenu() {
+            mui('#menu').popover('hide');
         }
     </script>
 </body>

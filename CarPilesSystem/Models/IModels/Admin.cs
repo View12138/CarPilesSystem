@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using View.SQLite.Handle;
 
-namespace CarPilesSystem.Models.Imodels
+namespace CarPilesSystem.Models.IModels
 {
     public class Admin : IModel
     {

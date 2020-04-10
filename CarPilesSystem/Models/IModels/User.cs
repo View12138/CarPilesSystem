@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using View.SQLite.Handle;
 
-namespace CarPilesSystem.Models.Imodels
+namespace CarPilesSystem.Models.IModels
 {
     /// <summary>
     /// cps_user 表对应的实体

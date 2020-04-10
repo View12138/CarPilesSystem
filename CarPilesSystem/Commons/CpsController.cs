@@ -44,11 +44,22 @@ namespace CarPilesSystem.Commons
         /// <summary>
         /// 成功
         /// </summary>
+        /// <returns></returns>
+        public JsonResult Success() => Success(string.Empty);
+        /// <summary>
+        /// 成功
+        /// </summary>
         /// <typeparam name="T">返回的数据类型</typeparam>
         /// <param name="data">数据</param>
         /// <param name="message">消息</param>
         /// <returns></returns>
         public JsonResult Success<T>(T data) => Success(data, string.Empty);
+        /// <summary>
+        /// 成功
+        /// </summary>
+        /// <param name="message">发送得消息</param>
+        /// <returns></returns>
+        public JsonResult Success(string message) => Success(true, message);
         /// <summary>
         /// 成功
         /// </summary>
@@ -65,28 +76,46 @@ namespace CarPilesSystem.Commons
                 Message = message,
             });
         }
-        /// <summary>
-        /// 失败
-        /// <para>状态为 -1</para>
-        /// </summary>
-        /// <param name="message">消息</param>
-        /// <returns></returns>
-        public JsonResult Error(string message) => Error(0, message);
+
         /// <summary>
         /// 失败
         /// </summary>
-        /// <param name="state">状态</param>
+        /// <returns></returns>
+        public JsonResult Error() => Error(string.Empty);
+        /// <summary>
+        /// 失败
+        /// <para>状态码为 <c><see langword="-1"/></c></para>
+        /// </summary>
         /// <param name="message">消息</param>
         /// <returns></returns>
-        public JsonResult Error(int state, string message)
+        public JsonResult Error(string message) => Error(-1, message);
+        /// <summary>
+        /// 失败
+        /// </summary>
+        /// <exception cref="ArgumentException"/>
+        /// <param name="state">状态<para>状态码不能为 <c><see langword="0"/></c></para></param>
+        /// <param name="message">消息</param>
+        /// <returns></returns>
+        public JsonResult Error(int state, string message) => Error(state, false, message);
+        /// <summary>
+        /// 失败
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
+        /// <typeparam name="T">返回的数据类型</typeparam>
+        /// <param name="state">状态<para>状态码不能为 <c><see langword="0"/></c></para></param>
+        /// <param name="data">数据</param>
+        /// <param name="message">消息</param>
+        /// <returns></returns>
+        public JsonResult Error<T>(int state, T data, string message)
         {
+            if (state == 0)
+            { throw new ArgumentException("0 是标识成功的状态。"); }
             return Json(new Result<object>()
             {
-                State = state == 0 ? -1 : state,
-                Data = null,
+                State = state,
+                Data = data,
                 Message = message,
             });
         }
-
     }
 }
