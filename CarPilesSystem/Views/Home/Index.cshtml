@@ -101,6 +101,17 @@
             bottom: 0;
         }
 
+        #drive-panel {
+            position: absolute;
+            right: 20px;
+            top: 62px;
+            background-color: #AA333333
+        }
+
+        .plan {
+            display: none;
+        }
+
         #map-header {
             position: absolute;
             left: 0;
@@ -238,6 +249,7 @@
     <div class="login-true">
         <div id="map-panel">
         </div>
+        <div id="drive-panel"></div>
         <div id="map-header">
             <a href="/">
                 <span style="font-weight:600;">新能源汽车充电桩导航系统</span>
@@ -246,10 +258,6 @@
                 <button class="box-outlined GetNearBy" disabled onclick="GetNearByPiles()">
                     <span class="mui-icon mui-icon-reload"></span>
                     <span>探索附近</span>
-                </button>
-                <button class="box-outlined" disabled onclick="StartNavigation()">
-                    <span class="mui-icon mui-icon-paperplane"></span>
-                    <span>开始导航</span>
                 </button>
                 <button class="box-outlined" onclick="SignOut()">
                     <span class="mui-icon mui-icon-close"></span>
@@ -270,12 +278,6 @@
                         <button class="list-button GetNearBy" disabled onclick="GetNearByPiles()">
                             <span class="mui-icon mui-icon-reload"></span>
                             <span>探索附近</span>
-                        </button>
-                    </li>
-                    <li class="mui-table-view-cell">
-                        <button class="list-button" disabled onclick="StartNavigation()">
-                            <span class="mui-icon mui-icon-paperplane"></span>
-                            <span>开始导航</span>
                         </button>
                     </li>
                     <li class="mui-table-view-cell" onclick="SignOut()">
@@ -308,12 +310,14 @@
         let gdMap = null;
         /** 高德定位控件 */
         let gdLocation = null;
-        /** 当前位置标记 */
-        let nowMarker = null;
         /** 当前位置坐标 */
         let nowPostion = null;
-        /** 附近充电桩列表 */
+        /** 附近充电桩点标记列表 */
         let PilesMarker = [];
+        /** 导航窗口 */
+        let PilesInfoWindow = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -30) });
+        /** 距离规划 */
+        let Driving = null;
 
         /** 加载完成后 */
         $(function () {
@@ -367,6 +371,7 @@
                 'AMap.Scale',
                 'AMap.MouseTool',
                 'AMap.Geolocation',
+                'AMap.Driving',
             ], function () {
                 // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
                 gdMap.addControl(new AMap.ToolBar());
@@ -487,8 +492,15 @@
         }
 
         /** 菜单一、探索附近  获取附近充电桩 */
-        function GetNearByPiles(distance = 5001) {
+        function GetNearByPiles(distance = 6000) {
             HideMenu();
+            if (Driving == null) {
+                Driving = new AMap.Driving({
+                    map: gdMap,
+                    panel: "drive-panel"
+                });
+            }
+            Driving.clear();
             mui.showLoading("正在获取附近充电桩...")
             $.ajax({
                 url: "/User/GetNearbyPiles",
@@ -501,20 +513,19 @@
                 success: (res) => {
                     mui.toast(res.Message)
                     if (res.State == 0) {
+                        gdMap.remove(PilesMarker);
                         PilesMarker = [];
                         for (var i = 0; i < res.Data.length; i++) {
-                            PilesMarker.push(new AMap.Marker({
-                                position: new AMap.LngLat(res.Data[i].Longitude, res.Data[i].Latitude),
-                            }));
-                            gdMap.add(PilesMarker[i]);
+                            let marker = new AMap.Marker({
+                                position: [res.Data[i].Longitude, res.Data[i].Latitude],
+                            });
+                            marker.position = res.Data[i];
+                            marker.on("click", showPilesInfo);
+                            PilesMarker.push(marker);
                         }
+                        gdMap.add(PilesMarker);
+                        gdMap.setFitView();
                     }
-                    //var marker = new AMap.Marker({
-                    //    position: new AMap.LngLat(102.671267, 25.032055),
-                    //});
-                    //gdMap.add(marker);
-                    //console.log(marker);
-                    //gdMap.setFitView([nowMarker, marker]);
                 },
                 error: () => {
                     mui.toast("网络错误，请稍后重试");
@@ -525,12 +536,28 @@
             })
         }
         /** 菜单二、开始导航  规划附近路线 */
-        function StartNavigation() {
+        function StartNavigation(lng, lat) {
             HideMenu();
+
+            PilesInfoWindow.close();
+            console.log(lng);
+            console.log(lat);
+
+            Driving.search(new AMap.LngLat(nowPostion.lng, nowPostion.lat), new AMap.LngLat(lng, lat), function (status, result) {
+                // result 即是对应的驾车导航信息，相关数据结构文档请参考  https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
+                if (status === 'complete') {
+                    mui.toast('绘制驾车路线完成');
+                } else {
+                    mui.toast('获取驾车数据失败：' + result);
+                }
+            });
+
         }
         /** 菜单三、退出登录 返回登录页 */
         function SignOut() {
             HideMenu();
+            gdMap.clearMap();
+            Driving.clear();
             Caches.Password = "";
             $("#input-password").val(Caches.Password);
             SetLogin(false);
@@ -541,6 +568,26 @@
             window.location.href = "/Home/Piles"
         }
 
+        /**
+         *  显示指定的充电桩的交互面板
+         * @@param pileInfo
+         */
+        function showPilesInfo(e) {
+            let pile = e.target.position;
+            console.log(pile);
+            let html = `<div>
+                                            <div>
+                                                <span>充电桩名称：${pile.Name}</span>
+                                            </div>
+                                            <div>
+                                                <span>编号：${pile.Id}</span>
+                                                <button class="mui-btn-primary" onclick="StartNavigation(${pile.Longitude},${pile.Latitude})">去这里</button>
+                                            </div>
+                                        </div>`;
+            PilesInfoWindow.setContent(html);
+            PilesInfoWindow.open(gdMap, [pile.Longitude, pile.Latitude]);
+        }
+
         /** 定位 */
         function GetLocation() {
             mui.showLoading("正在获取当前位置...")
@@ -548,9 +595,6 @@
                 (state, result) => {
                     mui.hideLoading();
                     if (state == "complete") {
-                        nowMarker = new AMap.Marker({
-                            position: result.position,
-                        });
                         nowPostion = result.position;
                         $(".GetNearBy").prop("disabled", false)
                         mui.toast("定位成功。");
