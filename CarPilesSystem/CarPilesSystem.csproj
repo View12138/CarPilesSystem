@@ -155,16 +155,22 @@
     <Compile Include="Models\About.cs" />
     <Compile Include="Models\IModels\Admin.cs" />
     <Compile Include="Models\IModels\Pile.cs" />
-    <Compile Include="Models\IModels\Price.cs" />
+    <Compile Include="Models\IModels\PileRecord.cs" />
     <Compile Include="Models\IModels\User.cs" />
     <Compile Include="Models\Result.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Database\CarSystemDB.db" />
+    <Content Include="Static\Images\ALiPay.png" />
     <Content Include="Static\Images\backgroud.png" />
+    <Content Include="Static\Images\pileIcon.png" />
+    <Content Include="Static\Images\pileIcon2.png" />
+    <Content Include="Static\Images\UnionPay.png" />
+    <Content Include="Static\Images\WeChatPay.png" />
     <Content Include="Static\mui\css\mui.css" />
     <Content Include="Static\mui\css\mui.min.css" />
+    <Content Include="Static\mui\css\mui.picker.min.css" />
     <Content Include="Static\mui\css\muiloading.css" />
     <Content Include="Static\mui\js\mui.js" />
     <Content Include="Static\mui\js\mui.min.js" />
@@ -174,6 +180,7 @@
     <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Properties\PublishProfiles\CustomProfileWeb.pubxml" />
     <Content Include="Static\jquery\jquery-3.4.1.min.js" />
+    <Content Include="Static\mui\js\mui.picker.min.js" />
     <Content Include="Static\mui\js\muiloading.js" />
     <Content Include="ViewScripts\Caches.js" />
     <Content Include="ViewScripts\Strings.js" />
@@ -188,6 +195,8 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\Piles.cshtml" />
+    <Content Include="Views\Home\Pay.cshtml" />
+    <Content Include="Views\Home\Personal.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

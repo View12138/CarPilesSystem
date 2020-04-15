@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Mvc;
 
@@ -99,6 +100,211 @@ namespace CarPilesSystem.Controllers
                 { return Success(piles, "获取充电桩成功"); }
                 else
                 { return Error("附近没有充电桩"); }
+            }
+        }
+        /// <summary>
+        /// 获取正在使用的充电桩
+        /// </summary>
+        /// <param name="userId">用户Id</param>
+        /// <returns></returns>
+        public ActionResult GetMyUsePile(long userId)
+        {
+            using (var db = this.BuildDB())
+            {
+                var pile = db.Query<Pile>($"where `UserId` = {userId} and `State` != 0 ").FirstOrDefault();
+                if (pile == null)
+                {
+                    return Error("没有使用或预约的充电桩");
+                }
+                else
+                {
+                    return Success(pile, "您有一个正在进行的订单");
+                }
+            }
+        }
+        /// <summary>
+        /// 开始使用充电桩
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="pileId"></param>
+        /// <returns></returns>
+        public ActionResult StartUsePile(long userId, long pileId)
+        {
+            using (var db = BuildDB())
+            {
+                var pile = db.Query<Pile>($"where `Id` = {pileId} and `State` = 0 or `State` = 2").FirstOrDefault();
+                if (pile != null)
+                {
+                    pile.UserId = userId;
+                    pile.State = 1;
+                    pile.StartTime = DateTime.Now.ToString();
+                    if (db.Update(pile)) { return Success(pile.StartTime, "开始充电"); }
+                    else
+                    { return Error("充电桩启动失败"); }
+                }
+                else
+                { return Error("充电桩启动失败"); }
+            }
+        }
+        /// <summary>
+        /// 结束使用充电桩
+        /// </summary>
+        /// <param name="userId">用户 id</param>
+        /// <param name="pileId">充电桩 id</param>
+        /// <returns></returns>
+        public ActionResult EndUsePile(long userId, long pileId)
+        {
+            using (var db = BuildDB())
+            {
+                var pile = db.Query<Pile>($"where `Id` = {pileId} and `State` = 1 ").FirstOrDefault();
+                if (pile != null)
+                {
+                    var record = new PileRecord()
+                    {
+                        StartTime = pile.StartTime,
+                        EndTime = DateTime.Now.ToString(),
+                        UserId = userId,
+                    };
+                    record.Money = ((DateTime.Parse(record.EndTime) - DateTime.Parse(record.StartTime)).TotalHours * double.Parse(pile.Price)).ToString();
+                    pile.UserId = 0;
+                    pile.State = 0;
+                    pile.StartTime = "";
+                    pile.EndTime = "";
+                    long id = 0;
+                    if (db.RunTransaction((trans) =>
+                    {
+                        var result = db.Insert(record, trans, out id);
+                        if (!result) return false;
+                        result = db.Update(pile, trans);
+                        if (!result) return false;
+                        return true;
+                    }))
+                    {
+                        record.Id = id;
+                        return Success(record, "结束充电");
+                    }
+                    else
+                    { return Error("充电桩关闭失败"); }
+                }
+                else
+                { return Error("充电桩关闭失败"); }
+            }
+        }
+        /// <summary>
+        /// 预约使用充电桩
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="pileId"></param>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
+        public ActionResult PlanUsePile(long userId, long pileId, DateTime startTime, DateTime endTime)
+        {
+            using (var db = BuildDB())
+            {
+                var pile = db.Query<Pile>($"where `Id` = {pileId} and `State` = 0 ").FirstOrDefault();
+                if (pile == null)
+                {
+                    return Error("预约失败，请稍后再试。");
+                }
+                else
+                {
+                    pile.StartTime = startTime.ToString();
+                    pile.EndTime = endTime.ToString();
+                    pile.State = 2;
+                    pile.UserId = userId;
+                    if (db.Update(pile))
+                    {
+                        // 预约计时，超时10分钟后任然没有开始充电则取消预约；
+                        Task.Run(async () =>
+                        {
+                            bool isUsed = false;
+                            bool isTimeout = false;
+                            while (!(isUsed || isTimeout))
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(30));
+                                using (var _db = BuildDB())
+                                {
+                                    var _pile = _db.Query<Pile>($"where `UserId` = {userId}").FirstOrDefault();
+                                    if (_pile == null)
+                                    {
+                                        continue;
+                                    }
+                                    if (_pile.State == 2)
+                                    {// 预约中
+                                        DateTime end = DateTime.Parse(_pile.StartTime);
+                                        if (DateTime.Now > end.AddMinutes(10))
+                                        {
+                                            _pile.State = 0;
+                                            _pile.UserId = 0;
+                                            _pile.StartTime = "";
+                                            _pile.EndTime = "";
+                                            _db.Update(_pile);
+                                            isTimeout = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        isUsed = true;
+                                    }
+                                }
+                            }
+                        });
+                        return Success("预约成功，请在预定时间使用，逾期自动取消。");
+                    }
+                    else { return Error("预约失败，请稍后再试。"); }
+                }
+            }
+        }
+        /// <summary>
+        /// 取消预约
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="pileId"></param>
+        /// <returns></returns>
+        public ActionResult PlanCanelPile(long userId, long pileId)
+        {
+            using (var db = BuildDB())
+            {
+                var pile = db.Query<Pile>($"where `Id` = {pileId} and `UserId` = '{userId}' ").FirstOrDefault();
+                if (pile != null)
+                {
+                    pile.UserId = 0;
+                    pile.State = 0;
+                    pile.StartTime = "";
+                    pile.EndTime = "";
+                    if (db.Update(pile))
+                    { return Success("取消成功"); }
+                    else
+                    { return Error("取消失败，请稍后重试"); }
+                }
+                else
+                { return Error("取消失败，请稍后重试"); }
+            }
+        }
+        /// <summary>
+        /// 支付
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
+        public ActionResult Pay(long userId, long recordId)
+        {
+            using (var db = this.BuildDB())
+            {
+                var record = db.Query<PileRecord>($"where `UserId` = '{userId}' and `Id` = {recordId}").FirstOrDefault();
+                if (record != null)
+                {
+                    record.State = 1;
+                    if (db.Update(record))
+                    {
+                        return Success("支付成功");
+                    }
+                    else
+                    { return Error("支付失败"); }
+                }
+                else
+                { return Error("支付失败"); }
             }
         }
         #endregion

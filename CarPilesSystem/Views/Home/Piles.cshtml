@@ -18,10 +18,180 @@
 
     <script src="~/ViewScripts/Caches.js"></script>
     <script src="~/ViewScripts/Strings.js"></script>
+
+    <style>
+        .login-panel {
+            position: absolute;
+            margin: 0;
+            padding: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 220;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-box {
+            margin: 20px auto;
+            font-size: 36px;
+            font-weight: 600;
+        }
+
+        .input-box {
+            margin-top: 40px;
+            max-width: 400px;
+        }
+
+        #map-panel {
+            width: 400px;
+            height: 700px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div> 
-        <p>Piles</p>
+    <div class="login-panel">
+        <div class="title-box">
+            <span>新能源汽车充电桩导航系统</span>
+        </div>
+        <div class="title-box">
+            <span>管理后台</span>
+        </div>
+        <div class="input-box">
+            <div class="mui-input-row">
+                <label>用户名*</label>
+                <input id="input-username" type="text" class="mui-input-clear" placeholder="请输入用户名">
+            </div>
+            <div class="mui-input-row">
+                <label>密码*</label>
+                <input id="input-password" type="password" class="mui-input-password" placeholder="请输入密码">
+            </div>
+            <div class="mui-button-row">
+                <button id="sign-in" type="button" onclick="SignIn()" class="mui-btn mui-btn-primary">登 录</button>
+            </div>
+        </div>
     </div>
+    <div>
+        <div id="map-panel">
+
+        </div>
+    </div>
+    <script>
+        let gdMap = null;
+        let uname = null;
+        let upswd = null;
+        let gdLocation = null;
+        let selectPoint = null;
+        $(function () {
+        });
+
+        /** 管理员登录 */
+        function SignIn() {
+            uname = $("#input-username").val();
+            upswd = $("#input-password").val();
+            if (Strings.IsNulllOrEmpty(uname)) {
+                mui.toast("请输入管理员用户名");
+                return;
+            }
+            if (Strings.IsNulllOrEmpty(upswd)) {
+                mui.toast("请输入管理员密码");
+                return;
+            }
+            $.ajax({
+                type: "post",
+                url: "/Admin/Login",
+                data: {
+                    uname: uname,
+                    upswd: upswd,
+                },
+                success: (res) => {
+                    mui.toast(res.Message);
+                    if (res.State == 0) {
+                        $(".login-panel").css("display", "none");
+                        LoadMap();
+                    }
+                    else {
+                        $("#input-password").val("");
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试。")
+                }
+            })
+        }
+
+        /** 加载地图 */
+        function LoadMap() {
+            $("#map-panel").css("display", "block");
+            gdMap = new AMap.Map('map-panel', {
+                zoom: 15,
+            });
+            AMap.plugin([
+                'AMap.ToolBar',
+                'AMap.Scale',
+                'AMap.MouseTool',
+                'AMap.Geolocation',
+                'AMap.Driving',
+            ], function () {
+                // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
+                //gdMap.addControl(new AMap.ToolBar());
+
+                // 在图面添加比例尺控件，展示地图在当前层级和纬度下的比例尺
+                //gdMap.addControl(new AMap.Scale());
+                gdLocation = new AMap.Geolocation({
+                    timeout: 10000,
+                    enableHighAccuracy: true,
+                    zoomToAccuracy: true,
+                    buttonOffset: new AMap.Pixel(-50, 20),
+                    buttonPosition: 'LB'
+                })
+                // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
+                gdMap.addControl(gdLocation);
+                GetLocation(() => { });
+                gdMap.on("click", MapClick);
+            });
+        };
+
+        function MapClick(e) {
+            selectPoint = [e.lnglat.lng, e.lnglat.lat];
+            gdMap.clear();
+            console.log(selectPoint);
+            let marker = new AMap.Marker({
+                position: selectPoint,
+                map: gdMap,
+            });
+
+        }
+
+
+        /** 定位 */
+        function GetLocation(success) {
+            mui.showLoading("正在获取当前位置...")
+            gdLocation.getCurrentPosition(
+                (state, result) => {
+                    mui.hideLoading();
+                    if (state == "complete") {
+                        nowPostion = result.position;
+                        $(".GetNearBy").prop("disabled", false)
+                        mui.toast("定位成功。");
+                        gdMap.setFitView(new AMap.Marker({ position: [nowPostion.lng, nowPostion.lat] }));
+                        if (success != undefined && success != null) { success(); }
+                        console.log(result.position);
+                    }
+                    else {
+                        mui.toast("定位失败，请允许网站访问您的位置信息。");
+                    }
+                },
+                () => {
+                    mui.hideLoading();
+                    mui.toast("定位失败，请允许网站访问您的位置信息。");
+                }
+            );
+        }
+    </script>
 </body>
 </html>

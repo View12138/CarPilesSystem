@@ -15,19 +15,40 @@ namespace CarPilesSystem.Controllers
     /// </summary>
     public class AdminController : CpsController
     {
+        #region 管理员登录
+        /// <summary>
+        /// 管理员登录
+        /// </summary>
+        /// <param name="uname"></param>
+        /// <param name="upswd"></param>
+        /// <returns></returns>
+        public ActionResult Login(string uname, string upswd)
+        {
+            using (var db = this.BuildDB())
+            {
+                var admin = db.Query<Admin>($"where `UserName` = '{uname}' and `Password` = '{upswd}'").FirstOrDefault();
+                if (admin != null)
+                { return Success(admin, "登录成功"); }
+                else
+                { return Error("你不具有管理员权限"); }
+            }
+        }
+        #endregion
+
         #region 充电桩管理
         /// <summary>
         /// 创建一个充电桩
         /// </summary>
         /// <param name="longitude">经度</param>
         /// <param name="latitude">纬度</param>
+        /// <param name="money">充电桩一小时的价格</param>
         /// <param name="name">充电桩名称</param>
         /// <returns></returns>
-        public ActionResult CreatePile(string longitude, string latitude, string name = "cps 充电桩")
+        public ActionResult CreatePile(string longitude, string latitude, string price, string name = "cps 充电桩")
         {
             using (var db = this.BuildDB())
             {
-                var pile = new Pile() { Longitude = longitude, Latitude = latitude, Name = name };
+                var pile = new Pile() { Longitude = longitude, Latitude = latitude, Name = name, Price = price };
                 if (db.Insert(pile, out long id))
                 {
                     pile.Id = id;
@@ -106,24 +127,6 @@ namespace CarPilesSystem.Controllers
                 {
                     return Error("没有充电桩");
                 }
-            }
-        }
-        #endregion
-
-        #region 计价表管理
-        /// <summary>
-        /// 获取计价表
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult GetPrices()
-        {
-            using (var db = this.BuildDB())
-            {
-                var prices = db.Query<Price>();
-                if (prices != null && prices.Count > 0)
-                { return Success(prices, "获取计价表成功"); }
-                else
-                { return Error("获取计价表失败"); }
             }
         }
         #endregion

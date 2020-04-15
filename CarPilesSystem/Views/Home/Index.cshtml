@@ -11,9 +11,11 @@
     <title>新能源汽车充电桩导航系统</title>
     <link rel="stylesheet" href="~/Static/mui/css/mui.min.css" />
     <link rel="stylesheet" href="~/Static/mui/css/muiloading.css" />
+    <link rel="stylesheet" href="~/Static/mui/css/mui.picker.min.css" />
+    <script type="text/javascript" src="~/Static/jquery/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="~/Static/mui/js/mui.min.js"></script>
     <script type="text/javascript" src="~/Static/mui/js/muiloading.js"></script>
-    <script type="text/javascript" src="~/Static/jquery/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Static/mui/js/mui.picker.min.js"></script>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=4ab6fc6e84057a8a81334b9f605cb941"></script>
 
     <script src="~/ViewScripts/Caches.js"></script>
@@ -37,6 +39,10 @@
             align-items: center;
             background-image: url("../Static/Images/backgroud.png");
             background-repeat: no-repeat;
+        }
+
+        .mui-toast-container {
+            z-index: 999999 !important;
         }
 
         .login-box {
@@ -97,8 +103,8 @@
             position: absolute;
             left: 0;
             right: 0;
-            top: 42px;
-            bottom: 0;
+            top: 10px;
+            bottom: 0px;
         }
 
         #drive-panel {
@@ -118,72 +124,174 @@
             right: 0;
             top: 0;
             width: 100%;
-            height: 42px;
-            padding: 0 10px;
+            height: 20px;
+            background-color: white;
+            box-shadow: 0px 0px 20px 20px #fff;
+        }
+
+        #header-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            width: 100%;
+            height: 40px;
+            padding: 5px 10px;
             display: flex;
             flex-flow: nowrap;
             justify-content: space-between;
             align-items: center;
-            background-color: white;
-            box-shadow: 0px 0px 10px 5px #666666;
         }
 
-        .map-setbox {
-            margin-top: 42px;
-            z-index: 4;
+        #header-control {
+            position: absolute;
+            left: 0;
+            bottom: 10px;
+            height: 100px;
+            padding: 0px 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-around;
             align-items: center;
-            width: 100%;
-            height: auto;
+            z-index: 200;
+            pointer-events: none;
         }
 
-        .mui-popover.mui-popover-action {
-            min-width: 200px;
-            width: auto;
-            right: 0px;
-            bottom: 0px;
-        }
-
-        .mui-table-view-cell > a {
-            color: black !important;
-        }
-
-        a > span {
-            color: black !important;
-        }
-
-        .box-outlined {
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            padding: 3px 5px;
-            margin-right: 10px;
-        }
-
-        .mui-table-view-cell {
-            padding: 0px;
-        }
-
-        .list-button {
-            border: 0 solid red;
-            width: 100%;
-            height: 42px;
-        }
-
-            .list-button > .mui-icon {
-                margin-right: 10px;
+            #header-control > * {
+                pointer-events: all;
             }
 
-        .mui-popover .mui-table-view .mui-table-view-cell:first-child, .mui-popover .mui-table-view .mui-table-view-cell:first-child > a:not(.mui-btn) {
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
+        .cps-person {
+            font-weight: 600;
+            font-size: 30px;
         }
 
-        .mui-popover .mui-table-view .mui-table-view-cell:last-child, .mui-popover .mui-table-view .mui-table-view-cell:last-child > a:not(.mui-btn) {
-            border-bottom-right-radius: 0;
-            border-bottom-left-radius: 0;
+        .cps-icon {
+            font-family: 'Segoe MDL2 Assets';
+            font-size: 20px;
+            line-height: 1;
         }
+
+
+        .cps-icon-btn {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            border: 0 solid;
+            box-shadow: 0 0 20px 1px #aaa;
+        }
+
+        .cps-icon-btn-primary {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            background-color: #1a55cf;
+            padding: 10px 40px;
+            box-shadow: 0 0 20px 1px #aaa;
+            font-weight: 600;
+            color: #fff;
+        }
+
+            .cps-icon-btn-primary > span {
+                font-weight: 600;
+                color: #fff;
+            }
+
+        .cps-radio-group {
+            display: flex;
+            padding: 4px;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 17px;
+            height: 34px;
+            box-shadow: 0 0 20px 1px #aaa;
+        }
+
+        .cps-radio {
+            padding: 5px 20px;
+            height: 26px;
+            border-radius: 13px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .cps-radio-group > .check {
+            background-color: #1a55cf;
+            color: white;
+        }
+
+        .amap-marker > .amap-icon > img {
+            filter: drop-shadow(0 0 2px #333) drop-shadow(0 0 0px #333) drop-shadow(0 0 0px #333);
+            -webkit-filter: drop-shadow(0 0 2px #333) drop-shadow(0 0 0px #333) drop-shadow(0 0 0px #333);
+        }
+
+        .amap-info-close {
+            right: 5px !important;
+        }
+
+        .amap-info-content {
+            box-shadow: 0 0 20px 0px #999;
+        }
+
+        .amap-info-contentContainer:hover .amap-info-content {
+            box-shadow: 0 0 10px 0px #333;
+        }
+
+        @@keyframes showList {
+            from {
+                height: 0px;
+            }
+
+            to {
+                height: 227px
+            }
+        }
+
+        @@keyframes closeList {
+            from {
+                height: 227px;
+            }
+
+            to {
+                height: 0px
+            }
+        }
+
+        #header-list {
+            position: absolute;
+            overflow: hidden;
+            right: 0;
+            bottom: 0px;
+            width: 100%;
+            padding: 20px 20px 0 80px;
+            display: flex;
+            flex-flow: nowrap;
+            flex-direction: column;
+            align-items: center;
+            height: 0;
+            max-width: 450px;
+            z-index: 201;
+            pointer-events: none;
+        }
+
+            #header-list > * {
+                pointer-events: all;
+            }
+
+            #header-list > div {
+                width: 100%;
+                padding: 10px 20px;
+                margin-bottom: 10px;
+                background-color: #fff;
+                border-radius: 17px;
+                box-shadow: 0 0 10px 0px #aaa;
+            }
     </style>
 </head>
 <body id="root">
@@ -249,59 +357,50 @@
     <div class="login-true">
         <div id="map-panel">
         </div>
-        <div id="drive-panel"></div>
+        <div id="drive-panel" style="display: none;"></div>
         <div id="map-header">
-            <a href="/">
-                <span style="font-weight:600;">新能源汽车充电桩导航系统</span>
-            </a>
-            <div style="display:flex;align-items:center;">
-                <button class="box-outlined GetNearBy" disabled onclick="GetNearByPiles()">
-                    <span class="mui-icon mui-icon-reload"></span>
-                    <span>探索附近</span>
-                </button>
-                <button class="box-outlined" onclick="SignOut()">
-                    <span class="mui-icon mui-icon-close"></span>
-                    <span>退出登录</span>
-                </button>
-                <button class="box-outlined" onclick="AdminPiles()">
-                    <span class="mui-icon mui-icon-contact"></span>
-                    <span>管理后台</span>
-                </button>
-                <a id="menu-set" href="#menu">
-                    <span style="font-weight:600;" class="mui-icon mui-icon-bars"></span>
-                </a>
+            <div id="header-bar">
+                <span class="mui-icon mui-icon-contact cps-person"></span>
+                <div>
+                    <a href="/">
+                        <span style="font-weight:600;">一起充</span>
+                    </a>
+                </div>
             </div>
-            <div id="menu" class="mui-popover mui-popover-bottom mui-popover-action ">
-                <!-- 可选择菜单 -->
-                <ul class="mui-table-view">
-                    <li class="mui-table-view-cell" style="padding:0;">
-                        <button class="list-button GetNearBy" disabled onclick="GetNearByPiles()">
-                            <span class="mui-icon mui-icon-reload"></span>
-                            <span>探索附近</span>
-                        </button>
-                    </li>
-                    <li class="mui-table-view-cell" onclick="SignOut()">
-                        <button class="list-button">
-                            <span class="mui-icon mui-icon-close"></span>
-                            <span>退出登录</span>
-                        </button>
-                    </li>
-                    <li class="mui-table-view-cell">
-                        <button class="list-button" onclick="AdminPiles()">
-                            <span class="mui-icon mui-icon-contact"></span>
-                            <span>管理后台</span>
-                        </button>
-                    </li>
-                </ul>
-                <!-- 关闭菜单 -->
-                <ul class="mui-table-view">
-                    <li class="mui-table-view-cell">
-                        <button class="list-button" onclick="HideMenu()">
-                            <b><span class="mui-icon mui-icon-arrowdown" style="margin-right:10px;"></span></b>
-                            <span><b>关 闭</b></span>
-                        </button>
-                    </li>
-                </ul>
+        </div>
+        <div id="header-control">
+            <button class="cps-icon-btn" onclick="GetNearByPiles()">
+                <span class="cps-icon">&#xE149;</span>
+            </button>
+            <button class="cps-icon-btn" onclick="GetLocation()">
+                <span class="cps-icon">&#xECCB;</span>
+            </button>
+        </div>
+        <div id="header-list">
+            <div>
+                <div style="display:flex;justify-content:space-between;">
+                    <div style="margin-bottom:10px;">
+                        <span id="pile-name" style="font-weight:600;">默认电站</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;justify-content: flex-end;min-width: 100px;">
+                        <span style="color:#f50000;font-size:12px">收费&nbsp;￥</span>
+                        <span id="pile-price" style="color:#f50000;font-size:24px">0.0</span>
+                        <span style="color:#999;font-size:12px">/小时</span>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <div>
+                        <span id="pile-id" style="color:#999;">NO.0</span>
+                        <span id="pile-state">空闲中</span>
+                    </div>
+                    <div>
+                        <span id="pile-plan-time"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="list-box" style="display:flex;flex-direction:row;justify-content:space-between;align-items:center;background-color:transparent;box-shadow: none;padding: 0;">
+                <button id="pile-start" disabled onclick="Start()" class="cps-icon-btn-primary" style="margin-bottom:10px;">充 电</button>
+                <button id="pile-plan" disabled onclick="Plan()" class="cps-icon-btn-primary" style="margin-bottom:10px;">预 约</button>
             </div>
         </div>
     </div>
@@ -318,6 +417,12 @@
         let PilesInfoWindow = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -30) });
         /** 距离规划 */
         let Driving = null;
+        /** 用户Id */
+        let UserId = 0;
+        /** 选中的充电桩 */
+        let SelectPile = null;
+        /** 使用中的充电桩 */
+        let UsePile = null;
 
         /** 加载完成后 */
         $(function () {
@@ -330,23 +435,26 @@
             $("#input-username").val(Caches.UserName);
             $("#input-password").val(Caches.Password);
             if (!Strings.IsNulllOrEmpty(Caches.UserName) && !Strings.IsNulllOrEmpty(Caches.Password)) {
-                isLogin = true;
+                SignIn();
             }
-            SetLogin(isLogin);
+            else {
+                SetLogin(isLogin);
+            }
+            $(".amap-info-close").click(function () {
+                gdMap.setFitView();
+            });
         });
 
         /** 设置菜单显示模式 */
         function MenuSet() {
-            if (document.body.clientWidth < 720) {
-                $(".box-outlined").css("display", "none");
-                $("#menu-set").css("display", "block");
+            if (document.body.clientWidth < 350) {
+                $("#list-box").css("flex-direction", "column");
             }
             else {
-                $(".box-outlined").css("display", "block");
-                $("#menu-set").css("display", "none");
-                HideMenu();
+                $("#list-box").css("flex-direction", "row");
             }
         }
+
 
         /** 设置登录状态 */
         function SetLogin(isLogin) {
@@ -358,6 +466,36 @@
             else {
                 $(".login-true").css("display", "none");
                 $(".login-false").css("display", "flex");
+            }
+        }
+
+        /** 设置列表面板是否显示 */
+        function SetListVisible(isShow) {
+            if (isShow) {
+                $("#header-list").css("height", "auto");
+                $("#header-list").css("animation", "showList 400ms");
+            }
+            else {
+                $("#header-list").css("height", "0");
+                $("#header-list").css("animation", "closeList 200ms");
+            }
+        }
+
+        /** 设置列表面板内容 */
+        function SetListContent(id, name, price, state, planTime) {
+            $("#pile-start").prop("disabled", false);
+            $("#pile-plan").prop("disabled", false);
+            console.log($("#pile-id").text());
+            $("#pile-id").text(`NO.${id}`);
+            $("#pile-name").text(name);
+            $("#pile-price").text(price);
+            let stateText = state == 0 ? "空闲中" : (state == 1 ? "使用中" : "已预约");
+            $("#pile-state").text(stateText);
+            let stateColor = state == 0 ? "#07c160" : (state == 1 ? "#ff3b30" : "#f3d34c");
+            $("#pile-state").css("color", stateColor)
+            $("#pile-plan-time").text(planTime);
+            if (state == 1) {
+                $("#pile-plan").prop("disabled", true);
             }
         }
 
@@ -374,19 +512,27 @@
                 'AMap.Driving',
             ], function () {
                 // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
-                gdMap.addControl(new AMap.ToolBar());
+                //gdMap.addControl(new AMap.ToolBar());
 
                 // 在图面添加比例尺控件，展示地图在当前层级和纬度下的比例尺
-                gdMap.addControl(new AMap.Scale());
+                //gdMap.addControl(new AMap.Scale());
                 gdLocation = new AMap.Geolocation({
                     timeout: 10000,
                     enableHighAccuracy: true,
                     zoomToAccuracy: true,
+                    buttonOffset: new AMap.Pixel(-50, 20),
                     buttonPosition: 'LB'
                 })
                 // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
                 gdMap.addControl(gdLocation);
-                GetLocation();
+                GetLocation(() => { GetNearByPiles(); });
+                gdMap.on("click", () => {
+                    if (UsePile != null) return;
+                    gdMap.setFitView();
+                    SetListVisible(false);
+                    PilesInfoWindow.close();
+                    SelectPile = null;
+                });
             });
         };
 
@@ -417,6 +563,7 @@
                                 let remeber = $("#input-remenber").prop("checked");
                                 console.log(remeber);
                                 Caches.UserName = res.Data.UserName;
+                                UserId = res.Data.Id;
                                 if (remeber) {
                                     Caches.Password = res.Data.Password;
                                 }
@@ -493,7 +640,6 @@
 
         /** 菜单一、探索附近  获取附近充电桩 */
         function GetNearByPiles(distance = 6000) {
-            HideMenu();
             if (Driving == null) {
                 Driving = new AMap.Driving({
                     map: gdMap,
@@ -516,8 +662,15 @@
                         gdMap.remove(PilesMarker);
                         PilesMarker = [];
                         for (var i = 0; i < res.Data.length; i++) {
+                            var icon = new AMap.Icon({
+                                size: new AMap.Size(35, 44),    // 图标尺寸
+                                image: '../../Static/Images/pileIcon2.png',  // Icon的图像
+                                imageOffset: new AMap.Pixel(0, 0),  // 图像相对展示区域的偏移量，适于雪碧图等
+                                imageSize: new AMap.Size(35, 44)   // 根据所设置的大小拉伸或压缩图片
+                            });
                             let marker = new AMap.Marker({
                                 position: [res.Data[i].Longitude, res.Data[i].Latitude],
+                                icon: icon,
                             });
                             marker.position = res.Data[i];
                             marker.on("click", showPilesInfo);
@@ -525,6 +678,7 @@
                         }
                         gdMap.add(PilesMarker);
                         gdMap.setFitView();
+                        GetUsePile();
                     }
                 },
                 error: () => {
@@ -537,8 +691,6 @@
         }
         /** 菜单二、开始导航  规划附近路线 */
         function StartNavigation(lng, lat) {
-            HideMenu();
-
             PilesInfoWindow.close();
             console.log(lng);
             console.log(lat);
@@ -555,7 +707,6 @@
         }
         /** 菜单三、退出登录 返回登录页 */
         function SignOut() {
-            HideMenu();
             gdMap.clearMap();
             Driving.clear();
             Caches.Password = "";
@@ -564,32 +715,203 @@
         }
         /** 菜单四、管理后台 跳转管理后台 */
         function AdminPiles() {
-            HideMenu();
             window.location.href = "/Home/Piles"
         }
 
-        /**
-         *  显示指定的充电桩的交互面板
-         * @@param pileInfo
-         */
+        /** 获取正在进行的订单 */
+        function GetUsePile() {
+            $.ajax({
+                type: "post",
+                url: "/User/GetMyUsePile",
+                data: { userId: UserId },
+                success: (res) => {
+                    if (res.State == 0) {
+                        mui.toast(res.Message);
+                        SelectPile = res.Data;
+                        UsePile = res.Data;
+                        let time = "";
+                        if (!Strings.IsNulllOrEmpty(UsePile.StartTime)) {
+                            time = `${UsePile.StartTime}`;
+                        }
+                        if (!Strings.IsNulllOrEmpty(UsePile.EndTime)) {
+                            time = `${UsePile.StartTime} - ${UsePile.EndTime}`;
+                        }
+                        SetListVisible(true);
+                        if (UsePile.State == 1) {
+                            $("#pile-start").text("结 束");
+                        }
+                        else {
+                            $("#pile-plan").text("取 消");
+                        }
+                        SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, UsePile.State, time);
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试");
+                }
+            });
+        }
+
+        /** 开始充电 */
+        function Start() {
+            let txt = $("#pile-start").text();
+            if (txt == "充 电") {
+                mui.showLoading("正在启动充电桩...");
+                $.ajax({
+                    type: "post",
+                    url: "/User/StartUsePile",
+                    data: {
+                        userId: UserId,
+                        pileId: SelectPile.Id,
+                    },
+                    success: (res) => {
+                        mui.toast(res.Message)
+                        if (res.State == 0) {
+                            $("#pile-start").text("结 束");
+                            $("#pile-plan").text("预 约");
+                            SetListContent(SelectPile.Id, SelectPile.Name, SelectPile.Price, 1, res.Data);
+                            UsePile = SelectPile;
+                        }
+                    },
+                    error: () => {
+                        mui.toast("网络错误，请稍后重试");
+                    },
+                    complete: () => {
+                        mui.hideLoading();
+                    }
+                })
+            }
+            else {
+                mui.showLoading("正在关闭充电桩...");
+                $.ajax({
+                    type: "post",
+                    url: "/User/EndUsePile",
+                    data: {
+                        userId: UserId,
+                        pileId: UsePile.Id,
+                    },
+                    success: (res) => {
+                        mui.toast(res.Message)
+                        if (res.State == 0) {
+                            $("#pile-start").text("充 电");
+                            UsePile = null;
+                            SetListVisible(false);
+                            window.location.href = `/Home/Pay?userId=${res.Data.UserId}&recordId=${res.Data.Id}&money=${res.Data.Money}`;
+                        }
+                    },
+                    error: () => {
+                        mui.toast("网络错误，请稍后重试");
+                    },
+                    complete: () => {
+                        mui.hideLoading();
+                    }
+                })
+            }
+        }
+
+        /** 预约使用 */
+        function Plan() {
+            let txt = $("#pile-plan").text();
+            if (txt == "预 约") {
+                let startTime;
+                let endTime;
+                var dtPicker = new mui.DtPicker({ type: "datetime", beginDate: new Date() });
+                mui.toast("请选择开始时间");
+                dtPicker.show(function (selectItems) {
+                    startTime = selectItems.value;
+                    console.log(startTime);
+                    dtPicker = new mui.DtPicker({ type: "datetime", beginDate: new Date(startTime) });
+                    mui.toast("请选择结束时间");
+                    dtPicker.show(function (select) {
+                        endTime = select.value;
+                        // 开始预约
+                        mui.showLoading("正在预约使用充电桩...");
+                        $.ajax({
+                            type: "post",
+                            url: "/User/PlanUsePile",
+                            data: {
+                                userId: UserId,
+                                pileId: SelectPile.Id,
+                                startTime: startTime,
+                                endTime: endTime,
+                            },
+                            success: (res) => {
+                                mui.toast(res.Message);
+                                if (res.State == 0) {
+                                    UsePile = SelectPile;
+                                    $("#pile-plan").text("取 消");
+                                    let time = `${startTime} - ${endTime}`;
+                                    SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, 2, time);
+                                }
+                            },
+                            error: () => {
+                                mui.toast("网络错误，请稍后重试。");
+                            },
+                            complete: () => {
+                                mui.hideLoading();
+                            }
+                        });
+                    });
+                });
+            }
+            else {
+                mui.showLoading("正在取消预约...");
+                $.ajax({
+                    type: "post",
+                    url: "/User/PlanCanelPile",
+                    data: {
+                        userId: UserId,
+                        pileId: UsePile.Id,
+                    },
+                    success: (res) => {
+                        mui.toast(res.Message);
+                        if (res.State == 0) {
+                            SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, 0, "");
+                            SetListVisible(false);
+                            UsePile = null;
+                            $("#pile-plan").text("预 约");
+                        }
+                    },
+                    error: () => {
+                        mui.toast("网络错误，请稍后重试。");
+                    },
+                    complete: () => {
+                        mui.hideLoading();
+                    }
+                });
+            }
+        }
+
+        /** 显示指定的充电桩的交互面板 */
         function showPilesInfo(e) {
             let pile = e.target.position;
+            //let stateText = pile.State == 0 ? "空闲中" : (pile.State == 1 ? "使用中" : "已预约");
             console.log(pile);
             let html = `<div>
-                                            <div>
-                                                <span>充电桩名称：${pile.Name}</span>
-                                            </div>
-                                            <div>
-                                                <span>编号：${pile.Id}</span>
-                                                <button class="mui-btn-primary" onclick="StartNavigation(${pile.Longitude},${pile.Latitude})">去这里</button>
-                                            </div>
-                                        </div>`;
+                                                <div>
+                                                    <span style="font-weight:600;margin-right: 5px;">${pile.Name}</span>
+                                                </div>
+                                                <div style="display: flex;justify-content: space-between;align-items: center;">
+                                                    <span style="margin-right:10px;color:#999;font-size:13px;">NO.${pile.Id}</span>
+                                                    <button style="margin-right: -10px;font-size: 12px;padding: 3px 8px;" class="mui-btn-primary" onclick="StartNavigation(${pile.Longitude},${pile.Latitude})">去这里</button>
+                                                </div>
+                                            </div>`;
             PilesInfoWindow.setContent(html);
+
+            gdMap.setFitView(new AMap.Marker({ position: [pile.Longitude, pile.Latitude] }));
             PilesInfoWindow.open(gdMap, [pile.Longitude, pile.Latitude]);
+            if (UsePile == null) {
+                SetListVisible(true);
+                let time = "";
+                if (Strings.IsNulllOrEmpty(pile.StartTime) || Strings.IsNulllOrEmpty(pile.EndTime)) { time = ""; }
+                else { time = `${pile.StartTime} - ${pile.EndTime}`; }
+                SelectPile = pile;
+                SetListContent(pile.Id, pile.Name, pile.Price, pile.State, time);
+            }
         }
 
         /** 定位 */
-        function GetLocation() {
+        function GetLocation(success) {
             mui.showLoading("正在获取当前位置...")
             gdLocation.getCurrentPosition(
                 (state, result) => {
@@ -598,6 +920,9 @@
                         nowPostion = result.position;
                         $(".GetNearBy").prop("disabled", false)
                         mui.toast("定位成功。");
+                        gdMap.setFitView(new AMap.Marker({ position: [nowPostion.lng, nowPostion.lat] }));
+                        if (success != undefined && success != null) { success(); }
+                        console.log(result.position);
                     }
                     else {
                         mui.toast("定位失败，请允许网站访问您的位置信息。");
@@ -608,11 +933,6 @@
                     mui.toast("定位失败，请允许网站访问您的位置信息。");
                 }
             );
-        }
-
-        /** 隐藏菜单栏 */
-        function HideMenu() {
-            mui('#menu').popover('hide');
         }
     </script>
 </body>

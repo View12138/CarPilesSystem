@@ -29,5 +29,26 @@ namespace CarPilesSystem.Models.IModels
         /// 充电桩标题
         /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// 充电桩状态
+        /// <para>0:空闲可用；1:已被使用；2:已被预约</para>
+        /// </summary>
+        public long State { get; set; }
+        /// <summary>
+        /// 预约开始时间
+        /// </summary>
+        public string StartTime { get; set; }
+        /// <summary>
+        /// 预约结束时间
+        /// </summary>
+        public string EndTime { get; set; }
+        /// <summary>
+        /// 正在使用或预约充电桩的用户Id
+        /// </summary>
+        public long UserId { get; set; }
+        /// <summary>
+        /// 价格
+        /// </summary>
+        public string Price { get; set; }
     }
 }

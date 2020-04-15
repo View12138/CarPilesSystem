@@ -1,0 +1,130 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Pay</title>
+    <link rel="stylesheet" href="~/Static/mui/css/mui.min.css" />
+    <link rel="stylesheet" href="~/Static/mui/css/muiloading.css" />
+    <script type="text/javascript" src="~/Static/mui/js/mui.min.js"></script>
+    <script type="text/javascript" src="~/Static/mui/js/muiloading.js"></script>
+    <script type="text/javascript" src="~/Static/jquery/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=4ab6fc6e84057a8a81334b9f605cb941"></script>
+
+    <style>
+        .box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color:#fff;
+        }
+            .box > div {
+                min-width: 300px;
+                margin-top: 20px;
+            }
+
+        .money-txt {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .pay-box {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            /*min-width: 300px;*/
+        }
+
+        .pay-img {
+            width: 130px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div style="position:absolute;top:15px;margin:0 auto;">
+            <div style="margin-top:20px;margin-bottom:80px;font-size:24px;font-weight:600;">
+                <span>支付中心</span>
+            </div>
+        </div>
+        <div style="position:absolute;bottom:15px;margin:0 auto;">
+            <div class="pay-box" style="font-size:14px;">
+                <span>新能源汽车充电桩导航系统</span>
+                <span>©2020 - 高家宝</span>
+            </div>
+        </div>
+        <div class="pay-box" >
+            <span>订单编号</span>
+            <span>@ViewBag.RecordId</span>
+        </div>
+        <div class="pay-box">
+            <span>待支付金额</span>
+            <span class="money-txt">￥@ViewBag.Money</span>
+        </div>
+        <div>
+            <div class="mui-input-row mui-radio pay-box">
+                <img class="pay-img" src="~/Static/Images/ALiPay.png" />
+                <input name="radio-pay" type="radio" checked style="top:10px;">
+            </div>
+            <div class="mui-input-row mui-radio pay-box">
+                <img class="pay-img" src="~/Static/Images/WeChatPay.png" />
+                <input name="radio-pay" type="radio" style="top:10px;">
+            </div>
+            <div class="mui-input-row mui-radio pay-box">
+                <img class="pay-img" src="~/Static/Images/UnionPay.png" />
+                <input name="radio-pay" type="radio" style="top:10px;">
+            </div>
+            <button id="pay-btn" class="mui-btn-primary" data-loading-text="支付中..." onclick="Pay()" style="width: 100%; margin-top:10px;">支 付</button>
+        </div>
+    </div>
+    <script>
+        function Pay() {
+            console.log($("#pay-btn").text());
+            if ($("#pay-btn").text() == "支 付") {
+                mui("#pay-btn").button('loading');
+                mui.showLoading("正在支付...");
+                $.ajax({
+                    type: "post",
+                    url: "/User/Pay",
+                    data: {
+                        userId:@ViewBag.UserId,
+                        recordId:@ViewBag.RecordId,
+                    },
+                    success: (res) => {
+                        mui.toast(res.Message);
+                        if (res.State == 0) {
+                            mui("#pay-btn").button('reset');
+                            $("#pay-btn").text("完成 - 返回首页");
+                            $("#pay-btn").removeClass("mui-btn-primary");
+                            $("#pay-btn").addClass("mui-btn-success");
+                        }
+                    },
+                    error: () => {
+                        mui.toast("网络错误，请稍后重试");
+                    },
+                    complete: () => {
+                        mui.hideLoading();
+                    }
+                })
+            }
+            else {
+                window.location.href = "/";
+            }
+        }
+    </script>
+</body>
+</html>
