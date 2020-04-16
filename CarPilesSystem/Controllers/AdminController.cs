@@ -48,10 +48,9 @@ namespace CarPilesSystem.Controllers
         {
             using (var db = this.BuildDB())
             {
-                var pile = new Pile() { Longitude = longitude, Latitude = latitude, Name = name, Price = price };
-                if (db.Insert(pile, out long id))
+                var pile = new Pile() { Longitude = longitude, Latitude = latitude, Name = name, Price = price, EndTime = "", StartTime = "", State = 0, UserId = 0 };
+                if (db.Insert(pile))
                 {
-                    pile.Id = id;
                     return Success(pile, "创建充电桩成功");
                 }
                 else
@@ -99,11 +98,11 @@ namespace CarPilesSystem.Controllers
             {
                 if (db.Update(pile))
                 {
-                    return Success("获取充电桩成功");
+                    return Success("数据修改成功");
                 }
                 else
                 {
-                    return Error("没有充电桩");
+                    return Error("修改失败");
                 }
             }
         }

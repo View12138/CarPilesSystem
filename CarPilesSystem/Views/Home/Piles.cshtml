@@ -48,8 +48,20 @@
 
         #map-panel {
             width: 400px;
-            height: 700px;
+            height: 100%;
             display: none;
+        }
+
+        .manage {
+            display: none;
+            margin: 10px;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0;
+            align-items: center;
         }
     </style>
 </head>
@@ -68,16 +80,37 @@
             </div>
             <div class="mui-input-row">
                 <label>密码*</label>
-                <input id="input-password" type="password" class="mui-input-password" placeholder="请输入密码">
+                <input id="input-password" type="password" class="mui-input-clear" placeholder="请输入密码">
             </div>
             <div class="mui-button-row">
                 <button id="sign-in" type="button" onclick="SignIn()" class="mui-btn mui-btn-primary">登 录</button>
             </div>
         </div>
     </div>
-    <div>
+    <div class="manage">
         <div id="map-panel">
 
+        </div>
+        <div style="flex-grow:1;margin-left:10px;max-width:500px;">
+            <form class="mui-input-group">
+                <div class="mui-input-row">
+                    <label>名称</label>
+                    <input type="text" class="mui-input-clear pile-name" placeholder="请输入充电桩的名称">
+                </div>
+                <div class="mui-input-row">
+                    <label>收费</label>
+                    <input type="number" class="mui-input-clear pile-price" placeholder="请输入每小时的价格">
+                </div>
+                <div class="mui-button-row create">
+                    <button onclick="Create()" type="button" class="mui-btn mui-btn-primary">创建</button>
+                </div>
+                <div class="mui-button-row delete" style="display:none;">
+                    <button onclick="Delete()" type="button" class="mui-btn mui-btn-primary">删除</button>
+                </div>
+                <div class="mui-button-row update" style="display:none;">
+                    <button onclick="Update()" type="button" class="mui-btn mui-btn-primary">更新</button>
+                </div>
+            </form>
         </div>
     </div>
     <script>
@@ -86,6 +119,23 @@
         let upswd = null;
         let gdLocation = null;
         let selectPoint = null;
+        let PilesMarker = [];
+        let SelectPile = null;
+        let SelectMarker = null;
+        Array.prototype.indexOf = function (val) {
+            for (var i = 0; i < this.length; i++) {
+                if (this[i] == val) return i;
+            }
+            return -1;
+        };
+
+        Array.prototype.remove = function (val) {
+            var index = this.indexOf(val);
+            if (index > -1) {
+                this.splice(index, 1);
+            }
+        }
+
         $(function () {
         });
 
@@ -112,6 +162,7 @@
                     mui.toast(res.Message);
                     if (res.State == 0) {
                         $(".login-panel").css("display", "none");
+                        $(".manage").css("display", "flex");
                         LoadMap();
                     }
                     else {
@@ -155,18 +206,72 @@
                 gdMap.on("click", MapClick);
             });
         };
+        let marker;
 
+        /** 点击地图 */
         function MapClick(e) {
             selectPoint = [e.lnglat.lng, e.lnglat.lat];
-            gdMap.clear();
+            if (marker != null || marker != undefined) {
+                gdMap.remove(marker);
+            }
             console.log(selectPoint);
-            let marker = new AMap.Marker({
+            marker = new AMap.Marker({
                 position: selectPoint,
-                map: gdMap,
             });
-
+            gdMap.add(marker);
+            gdMap.setFitView(marker);
+            SelectPile = null;
+            $(".create").css("display", "block");
+            $(".delete").css("display", "none");
+            $(".update").css("display", "none");
+            $(".pile-name").val("");
+            $(".pile-price").val("");
         }
 
+        /** 菜单一、探索附近  获取附近充电桩 */
+        function GetNearByPiles(distance = 6000) {
+            mui.showLoading("正在获取附近充电桩...")
+            $.ajax({
+                url: "/User/GetNearbyPiles",
+                data: {
+                    longitude: nowPostion.lng,
+                    latitude: nowPostion.lat,
+                    distance: distance,
+                },
+                type: "post",
+                success: (res) => {
+                    mui.toast(res.Message)
+                    if (res.State == 0) {
+                        gdMap.remove(PilesMarker);
+                        PilesMarker = [];
+                        for (var i = 0; i < res.Data.length; i++) {
+                            var icon = new AMap.Icon({
+                                size: new AMap.Size(35, 44),    // 图标尺寸
+                                image: '../../Static/Images/pileIcon.png',  // Icon的图像
+                                imageOffset: new AMap.Pixel(0, 0),  // 图像相对展示区域的偏移量，适于雪碧图等
+                                imageSize: new AMap.Size(35, 44)   // 根据所设置的大小拉伸或压缩图片
+                            });
+                            let marker = new AMap.Marker({
+                                position: [res.Data[i].Longitude, res.Data[i].Latitude],
+                                icon: icon,
+                            });
+                            marker.position = res.Data[i];
+                            marker.Marker = marker;
+                            marker.on("click", Select);
+                            PilesMarker.push(marker);
+                        }
+                        gdMap.add(PilesMarker);
+                        gdMap.setFitView();
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试");
+                },
+                complete: () => {
+                    mui.hideLoading();
+                }
+            })
+        }
 
         /** 定位 */
         function GetLocation(success) {
@@ -181,6 +286,7 @@
                         gdMap.setFitView(new AMap.Marker({ position: [nowPostion.lng, nowPostion.lat] }));
                         if (success != undefined && success != null) { success(); }
                         console.log(result.position);
+                        GetNearByPiles(10000);
                     }
                     else {
                         mui.toast("定位失败，请允许网站访问您的位置信息。");
@@ -191,6 +297,133 @@
                     mui.toast("定位失败，请允许网站访问您的位置信息。");
                 }
             );
+        }
+
+        function Create() {
+            if (selectPoint == null) {
+                mui.toast("没有选中目标");
+                return;
+            }
+            let name = $(".pile-name").val();
+            let price = $(".pile-price").val();
+            if (Strings.IsNulllOrEmpty(price)) {
+                mui.toast("请输入价格");
+                return;
+            }
+
+            console.log(selectPoint);
+            mui.showLoading("正在更新...");
+            $.ajax({
+                type: "post",
+                url: "/Admin/CreatePile",
+                data: { longitude: `${selectPoint[0]}`, latitude: `${selectPoint[1]}`, price: `${price}`, name: name },
+                success: (res) => {
+                    mui.toast(res.Message);
+                    if (res.State == 0) {
+                        GetNearByPiles(10000);
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试。")
+                },
+                complete: () => {
+                    mui.hideLoading();
+                }
+            });
+        }
+
+        function Delete() {
+            if (SelectPile == null) {
+                mui.toast("没有选中目标");
+                return;
+            }
+
+            console.log(SelectPile);
+            mui.showLoading("正在删除...");
+            $.ajax({
+                type: "post",
+                url: "/Admin/DeletePiles",
+                data: {
+                    piles: [{
+                        Id: SelectPile.Id,
+                        Longitude: SelectPile.Longitude,
+                        Latitude: SelectPile.Latitude,
+                        Name: SelectPile.Name,
+                        Price: SelectPile.Price,
+                        StartTime: "",
+                        EndTime: "",
+                        State: 0,
+                        UserId:0
+                    }]
+                },
+                success: (res) => {
+                    mui.toast(res.Message);
+                    if (res.State == 0) {
+                        gdMap.remove(SelectMarker);
+                        PilesMarker.remove(SelectMarker);
+                        $(".create").css("display", "block");
+                        $(".delete").css("display", "none");
+                        $(".update").css("display", "none");
+                        $(".pile-name").val("");
+                        $(".pile-price").val("");
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试。")
+                },
+                complete: () => {
+                    mui.hideLoading();
+                }
+            });
+        }
+
+        function Update() {
+            if (SelectPile == null) {
+                mui.toast("没有选中目标");
+                return;
+            }
+
+            let name = $(".pile-name").val();
+            let price = $(".pile-price").val();
+
+            if (Strings.IsNulllOrEmpty(name)) {
+                mui.toast("请输入名称");
+                return;
+            }
+            if (Strings.IsNulllOrEmpty(price)) {
+                mui.toast("请输入价格");
+                return;
+            }
+
+            SelectPile.Name = name;
+            SelectPile.Price = price;
+
+            mui.showLoading("正在更新...");
+            $.ajax({
+                type: "post",
+                url: "/Admin/UpdatePiles",
+                data: { pile: SelectPile },
+                success: (res) => {
+                    mui.toast(res.Message);
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试。")
+                },
+                complete: () => {
+                    mui.hideLoading();
+                }
+            });
+        }
+
+        function Select(e) {
+            SelectPile = e.target.position;
+            SelectMarker = e.target.Marker;
+            selectPoint = null;
+            $(".create").css("display", "none");
+            $(".delete").css("display", "block");
+            $(".update").css("display", "block");
+            $(".pile-name").val(SelectPile.Name);
+            $(".pile-price").val(SelectPile.Price);
         }
     </script>
 </body>
