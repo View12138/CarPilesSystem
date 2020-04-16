@@ -36,5 +36,9 @@ namespace CarPilesSystem.Models.IModels
         /// <para>0：未支付，1：已支付</para>
         /// </summary>
         public long State { get; set; }
+        /// <summary>
+        /// 充电桩 Id
+        /// </summary>
+        public long PileId { get; set; }
     }
 }

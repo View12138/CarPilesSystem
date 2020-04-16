@@ -146,6 +146,7 @@
     <Compile Include="Commons\CpsController.cs" />
     <Compile Include="Commons\DMS.cs" />
     <Compile Include="Commons\LngLat.cs" />
+    <Compile Include="Commons\MoneyHandle.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UserController.cs" />

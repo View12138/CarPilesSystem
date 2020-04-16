@@ -360,7 +360,9 @@
         <div id="drive-panel" style="display: none;"></div>
         <div id="map-header">
             <div id="header-bar">
-                <span class="mui-icon mui-icon-contact cps-person"></span>
+                <div onclick="MyInfo()">
+                    <span class="mui-icon mui-icon-contact cps-person"></span>
+                </div>
                 <div>
                     <a href="/">
                         <span style="font-weight:600;">一起充</span>
@@ -562,10 +564,10 @@
                             if (res.State == 0) {
                                 let remeber = $("#input-remenber").prop("checked");
                                 console.log(remeber);
-                                Caches.UserName = res.Data.UserName;
+                                Caches.UserName = username;
                                 UserId = res.Data.Id;
                                 if (remeber) {
-                                    Caches.Password = res.Data.Password;
+                                    Caches.Password = password;
                                 }
                                 else {
                                     Caches.Password = "";
@@ -636,6 +638,12 @@
                     });
                 }
             }
+        }
+
+        /** 跳转个人信息页 */
+        function MyInfo() {
+            Caches.UserId = UserId;
+            window.location.href = "/Home/Personal";
         }
 
         /** 菜单一、探索附近  获取附近充电桩 */
@@ -720,6 +728,7 @@
 
         /** 获取正在进行的订单 */
         function GetUsePile() {
+            mui.showLoading("正在查找进行中的订单...");
             $.ajax({
                 type: "post",
                 url: "/User/GetMyUsePile",
@@ -748,6 +757,9 @@
                 },
                 error: () => {
                     mui.toast("网络错误，请稍后重试");
+                },
+                complete: () => {
+                    mui.hideLoading();
                 }
             });
         }
@@ -796,7 +808,10 @@
                             $("#pile-start").text("充 电");
                             UsePile = null;
                             SetListVisible(false);
-                            window.location.href = `/Home/Pay?userId=${res.Data.UserId}&recordId=${res.Data.Id}&money=${res.Data.Money}`;
+                            Caches.UserId = UserId;
+                            Caches.PayId = res.Data.Id;
+                            Caches.PayMoney = res.Data.Money;
+                            window.location.href = `/Home/Pay`;
                         }
                     },
                     error: () => {

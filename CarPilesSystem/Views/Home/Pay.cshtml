@@ -1,9 +1,4 @@
-﻿
-@{
-    Layout = null;
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html>
 <head>
@@ -16,6 +11,8 @@
     <script type="text/javascript" src="~/Static/jquery/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=4ab6fc6e84057a8a81334b9f605cb941"></script>
 
+    <script src="~/ViewScripts/Caches.js"></script>
+    <script src="~/ViewScripts/Strings.js"></script>
     <style>
         .box {
             display: flex;
@@ -27,8 +24,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color:#fff;
+            background-color: #fff;
         }
+
             .box > div {
                 min-width: 300px;
                 margin-top: 20px;
@@ -67,13 +65,13 @@
                 <span>©2020 - 高家宝</span>
             </div>
         </div>
-        <div class="pay-box" >
+        <div class="pay-box">
             <span>订单编号</span>
-            <span>@ViewBag.RecordId</span>
+            <span class="payId-txt">0</span>
         </div>
         <div class="pay-box">
             <span>待支付金额</span>
-            <span class="money-txt">￥@ViewBag.Money</span>
+            <span class="money-txt">￥0.00</span>
         </div>
         <div>
             <div class="mui-input-row mui-radio pay-box">
@@ -92,6 +90,23 @@
         </div>
     </div>
     <script>
+        let UserId;
+        let PatId;
+        let PayMoney;
+        $(function () {
+            UserId = Caches.UserId;
+            PatId = Caches.PayId;
+            PayMoney = Caches.PayMoney;
+            Caches.UserId = "";
+            Caches.PayId = "";
+            Caches.PayMoney = "";
+            if (Strings.IsNulllOrEmpty(UserId) || Strings.IsNulllOrEmpty(PatId) || Strings.IsNulllOrEmpty(PayMoney)) {
+                window.location.href = "/";
+            }
+            let money = `￥${PayMoney}`;
+            $(".payId-txt").text(PatId);
+            $(".money-txt").text(money);
+        });
         function Pay() {
             console.log($("#pay-btn").text());
             if ($("#pay-btn").text() == "支 付") {
@@ -101,8 +116,8 @@
                     type: "post",
                     url: "/User/Pay",
                     data: {
-                        userId:@ViewBag.UserId,
-                        recordId:@ViewBag.RecordId,
+                        userId:UserId,
+                        recordId:PatId,
                     },
                     success: (res) => {
                         mui.toast(res.Message);

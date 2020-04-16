@@ -15,6 +15,12 @@ namespace CarPilesSystem.Models.IModels
         [Key]
         public long Id { get; set; }
         public string UserName { get; set; }
+        /// <summary>
+        /// 用户密码
+        /// <para>安全起见，禁止密码序列化</para>
+        /// </summary>
+        [JsonIgnore]
+        [ScriptIgnore]
         public string Password { get; set; }
         public string Sex { get; set; }
         public long Age { get; set; }

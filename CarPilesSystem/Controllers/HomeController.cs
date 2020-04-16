@@ -18,14 +18,7 @@ namespace CarPilesSystem.Controllers
         /// 支付页面
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
-        public ActionResult Pay(long userId, long recordId, string money)
-        {
-            ViewBag.Money = money.Substring(0, 6);
-            ViewBag.UserId = userId;
-            ViewBag.RecordId = recordId;
-            return View();
-        }
+        public ActionResult Pay()=> View();
         /// <summary>
         /// 个人中心
         /// </summary>

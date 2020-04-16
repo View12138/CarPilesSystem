@@ -74,6 +74,26 @@ namespace CarPilesSystem.Controllers
                 }
             }
         }
+        /// <summary>
+        /// 获取个人信息
+        /// </summary>
+        /// <param name="userId">用户 Id</param>
+        /// <returns></returns>
+        public ActionResult GetUser(long userId)
+        {
+            using (var db = BuildDB())
+            {
+                var user = db.Query<User>($"where `Id` = {userId}").FirstOrDefault();
+                if (user != null)
+                {
+                    return Success(user, "获取用户信息成功");
+                }
+                else
+                {
+                    return Error("获取用户信息失败");
+                }
+            }
+        }
         #endregion
 
         #region 充电桩相关
@@ -164,8 +184,11 @@ namespace CarPilesSystem.Controllers
                         StartTime = pile.StartTime,
                         EndTime = DateTime.Now.ToString(),
                         UserId = userId,
+                        PileId = pileId,
                     };
-                    record.Money = ((DateTime.Parse(record.EndTime) - DateTime.Parse(record.StartTime)).TotalHours * double.Parse(pile.Price)).ToString();
+                    double hours = (DateTime.Parse(record.EndTime) - DateTime.Parse(record.StartTime)).TotalHours;
+                    double money = MoneyHandle.GetPrice(hours * double.Parse(pile.Price), 0.01d);
+                    record.Money = money.ToString("0.00");
                     pile.UserId = 0;
                     pile.State = 0;
                     pile.StartTime = "";
@@ -282,8 +305,11 @@ namespace CarPilesSystem.Controllers
                 { return Error("取消失败，请稍后重试"); }
             }
         }
+        #endregion
+
+        #region 订单相关
         /// <summary>
-        /// 支付
+        /// 订单支付
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="recordId"></param>
@@ -305,6 +331,30 @@ namespace CarPilesSystem.Controllers
                 }
                 else
                 { return Error("支付失败"); }
+            }
+        }
+        /// <summary>
+        /// 获取订单列表 - 分页
+        /// <para>指定状态或所有订单</para>
+        /// </summary>
+        /// <param name="userId">用户 Id</param>
+        /// <param name="state">订单状态</param>
+        /// <returns></returns>
+        public ActionResult GetOrderList(long userId, int? state, int page = 0, int rows = 10)
+        {
+            using (var db = BuildDB())
+            {
+                string stateCond = state.HasValue ? $"`State` = {state}" : "true";
+                string pageCond = $"limit {page * rows},{rows}";
+                var orders = db.Query<PileRecord>($"where `UserId` = '{userId}' and {stateCond} order by `StartTime` desc {pageCond}");
+                if (orders.Count >= 0)
+                {
+                    return Success(orders, "已获取到订单");
+                }
+                else
+                {
+                    return Error("没有订单信息");
+                }
             }
         }
         #endregion

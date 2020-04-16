@@ -9,9 +9,334 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>Personal</title>
+    <link rel="stylesheet" href="~/Static/mui/css/mui.min.css" />
+    <link rel="stylesheet" href="~/Static/mui/css/muiloading.css" />
+    <link rel="stylesheet" href="~/Static/mui/css/mui.picker.min.css" />
+    <script type="text/javascript" src="~/Static/jquery/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Static/mui/js/mui.min.js"></script>
+    <script type="text/javascript" src="~/Static/mui/js/muiloading.js"></script>
+    <script type="text/javascript" src="~/Static/mui/js/mui.picker.min.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=4ab6fc6e84057a8a81334b9f605cb941"></script>
+
+    <script src="~/ViewScripts/Caches.js"></script>
+    <script src="~/ViewScripts/Strings.js"></script>
+
+    <style>
+        #root {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cps-head {
+            flex-grow: 0;
+            background-color: #5072de;
+            color: white;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cps-body {
+            flex-grow: 1;
+        }
+
+        .list-box {
+            margin: 0 auto;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+            .list-box > .list-item {
+                border-bottom: 1px solid #ccc;
+            }
+
+                .list-box > .list-item:last-child {
+                    border-bottom: 0px solid #ccc;
+                }
+
+        .list-item {
+            display: flex;
+            max-height: 80px;
+            flex-grow: 1;
+            background-color: white;
+            padding: 5px 10px;
+            justify-content: flex-start;
+            align-items: center;
+            font-size: 14px;
+        }
+
+            .list-item > div:first-child {
+                flex-grow: 1;
+            }
+
+        .item-id {
+            color: #808080;
+            margin-left: 30px;
+        }
+
+        .item-money {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2ba246;
+        }
+
+        .item-time {
+            color: #666;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .item-time-split {
+            margin: 0 5px;
+            font-weight: 600;
+        }
+
+        .item-state {
+            border-radius: 3px;
+            padding: 5px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .success {
+            border: 1px solid #2ba246;
+            background-color: rgba(43, 162, 70, 0.7);
+        }
+
+        .failed {
+            border: 1px solid #ff3b30;
+            background-color: rgba(255, 59, 48, 0.7);
+        }
+
+        .icon-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px 10px;
+        }
+
+            .icon-btn > .mui-icon {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+            .icon-btn > * {
+                margin: 0;
+                padding: 0;
+            }
+
+                .icon-btn > *:first-child {
+                    margin-right: 5px;
+                }
+
+        .cps-person {
+            font-weight: 600;
+            font-size: 30px;
+        }
+
+        .person-box {
+            padding: 10px 20px;
+        }
+    </style>
 </head>
 <body>
-    <div> 
+    <div id="root">
+        <div class="cps-head">
+            <div style="display:flex;margin:5px 24px 5px 10px;align-items:center;">
+                <div onclick="GoHome()">
+                    <span class="mui-icon mui-icon-undo cps-person"></span>
+                </div>
+                <div style="flex-grow:1;font-size: 18px;text-align:center" class="cps-person">
+                    <span>个人中心</span>
+                </div>
+            </div>
+            <div class="person-box">
+                <div>
+                    <span class="user-nickname"></span>
+                    <span class="user-name" style="margin-left:10px;"></span>
+                    <span class="user-sex" style="margin-left:10px;"></span>
+                </div>
+                <div style="margin-top:10px;">
+                    <span class="user-phone"></span>
+                    <span class="user-email" style="margin-left:10px;"></span>
+                </div>
+            </div>
+        </div>
+        <div class="cps-body">
+            <div style="font-weight:600;margin:5px 10px;">我的订单</div>
+            <div class="list-box">
+                <div class="list-item">
+                    <div>
+                        <div>
+                            <span>金额:</span>
+                            <span class="item-money">￥0.17</span>
+                            <span class="item-id">订单编号: 49</span>
+                        </div>
+                        <div>
+                            <span class="item-time">2020-4-16 11:50:53</span>
+                            <span class="item-time-split">至</span>
+                            <span class="item-time">2020-4-16 11:51:54</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="item-state success">已支付</span>
+                    </div>
+                    <div>
+                        <span class="mui-icon mui-icon-forward"></span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-around;padding:5px 20px;">
+                <button class="icon-btn" onclick="FirstPage()"><span class="mui-icon mui-icon-list"></span><span>第一页</span></button>
+                <button class="icon-btn" onclick="LastPage()"><span class="mui-icon mui-icon-arrowleft"></span><span>上一页</span></button>
+                <button class="icon-btn" onclick="NextPage()"><span>下一页</span><span class="mui-icon mui-icon-arrowright"></span></button>
+            </div>
+        </div>
     </div>
+    <script>
+        let UserId;
+        let Page = 0;
+        $(function () {
+            UserId = Caches.UserId;
+            //Caches.UserId = "";
+            if (Strings.IsNulllOrEmpty(UserId)) {
+                window.location.href = "/";
+            }
+            GetUser();
+        });
+
+        function GetUser() {
+            mui.showLoading("正在加载个人信息...");
+            $.ajax({
+                type: "post",
+                url: "/User/GetUser",
+                data: { userId: UserId },
+                success: (res) => {
+                    if (res.State == 0) {
+                        // 设置页面显示个人信息
+                        let user = res.Data;
+                        $(".user-nickname").text(user.UserName);
+                        $(".user-name").text(user.Name);
+                        $(".user-sex").text(user.Sex);
+                        $(".user-phone").text(user.Phone);
+                        $(".user-email").text(user.Email);
+
+                        Page = 0;
+                        GetOrders(Page);
+                    } else {
+                        mui.toast(res.Message);
+                    }
+                },
+                error: () => {
+                    mui.hideLoading();
+                    mui.toast("网络错误，请稍后重试。");
+                }
+            });
+        }
+
+        function GetOrders(page) {
+            mui.showLoading("正在加载订单信息...");
+            $.ajax({
+                type: "post",
+                url: "/User/GetOrderList",
+                data: {
+                    userId: UserId,
+                    page: page,
+                },
+                success: (res) => {
+                    if (res.State == 0) {
+                        let html = "";
+                        // 设置订单显示
+                        if (res.Data.length <= 0) {
+                            Page -= 1;
+                            mui.toast("没有更多数据了");
+                        }
+                        else {
+                            for (var i = 0; i < res.Data.length; i++) {
+                                let order = res.Data[i];
+                                html += `
+                                        <div class="list-item" onclick="Pay(${order.Id},${order.UserId},${order.Money},${order.State})">
+                                            <div>
+                                                <div>
+                                                    <span>金额:</span>
+                                                    <span class="item-money">￥${order.Money}</span>
+                                                    <span class="item-id">订单编号: ${order.Id}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="item-time">${order.StartTime}</span>
+                                                    <span class="item-time-split">至</span>
+                                                    <span class="item-time">${order.EndTime}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="item-state ${order.State == 1 ? `success` : `failed`}">${order.State == 1 ? `已支付` : `待支付`}</span>
+                                            </div>
+                                            ${order.State == 1 ? '' : `<div><span class="mui-icon mui-icon-forward"></span></div>`}
+                                        </div>`;
+                            }
+                            $(".list-box").empty();
+                            $(".list-box").append(html);
+                        }
+                    }
+                    else {
+                        mui.toast(res.Message);
+                    }
+                },
+                error: () => {
+                    mui.toast("网络错误，请稍后重试。");
+                },
+                complete: () => {
+                    mui.hideLoading();
+                }
+            });
+        }
+
+        function Pay(orderId, userId, money, state) {
+            if (state != 1) {
+                Caches.UserId = userId;
+                Caches.PayId = orderId;
+                Caches.PayMoney = money;
+                window.location.href = `/Home/Pay`;
+            }
+        }
+
+        /** 第一页 */
+        function FirstPage() {
+            Page = 0;
+            GetOrders(Page);
+        }
+        /** 下一页 */
+        function NextPage() {
+            Page += 1;
+            GetOrders(Page);
+        }
+        /** 上一页 */
+        function LastPage() {
+            Page -= 1;
+            if (Page < 0) {
+                mui.toast("已经是第一页了");
+                Page = 0;
+            }
+            else {
+                GetOrders(Page);
+            }
+        }
+
+        function GoHome() {
+            window.history.back();
+        }
+    </script>
 </body>
 </html>
