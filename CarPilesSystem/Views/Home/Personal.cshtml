@@ -161,6 +161,9 @@
                 <div style="flex-grow:1;font-size: 18px;text-align:center" class="cps-person">
                     <span>个人中心</span>
                 </div>
+                <div onclick="SignOut()">
+                    <span class="mui-icon mui-icon-locked"></span>
+                </div>
             </div>
             <div class="person-box">
                 <div>
@@ -336,6 +339,11 @@
 
         function GoHome() {
             window.history.back();
+        }
+
+        function SignOut() {
+            Caches.Password = "";
+            window.location.href = "/";
         }
     </script>
 </body>
