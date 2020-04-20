@@ -488,7 +488,7 @@
         }
 
         /** 设置列表面板内容 */
-        function SetListContent(id, name, price, state, planTime) {
+        function SetListContent(id, name, price, state, planTime, userId) {
             $("#pile-start").prop("disabled", false);
             $("#pile-plan").prop("disabled", false);
             console.log($("#pile-id").text());
@@ -500,7 +500,15 @@
             let stateColor = state == 0 ? "#07c160" : (state == 1 ? "#ff3b30" : "#f3d34c");
             $("#pile-state").css("color", stateColor)
             $("#pile-plan-time").text(planTime);
-            if (state == 1) {
+            if (userId == UserId) {
+                // 本人订单
+                if (state == 1) {
+                    $("#pile-plan").prop("disabled", true);
+                }
+            }
+            else if (state != 0) {
+                // 他人使用中，不可使用，不可预约。
+                $("#pile-start").prop("disabled", true);
                 $("#pile-plan").prop("disabled", true);
             }
         }
@@ -756,7 +764,7 @@
                         else {
                             $("#pile-plan").text("取 消");
                         }
-                        SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, UsePile.State, time);
+                        SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, UsePile.State, time, UserId);
                     }
                 },
                 error: () => {
@@ -785,7 +793,7 @@
                         if (res.State == 0) {
                             $("#pile-start").text("结 束");
                             $("#pile-plan").text("预 约");
-                            SetListContent(SelectPile.Id, SelectPile.Name, SelectPile.Price, 1, res.Data);
+                            SetListContent(SelectPile.Id, SelectPile.Name, SelectPile.Price, 1, res.Data, UserId);
                             UsePile = SelectPile;
                         }
                     },
@@ -860,7 +868,7 @@
                                     UsePile = SelectPile;
                                     $("#pile-plan").text("取 消");
                                     let time = `${startTime} - ${endTime}`;
-                                    SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, 2, time);
+                                    SetListContent(UsePile.Id, UsePile.Name, UsePile.Price, 2, time, UserId);
                                 }
                             },
                             error: () => {
@@ -907,14 +915,14 @@
             //let stateText = pile.State == 0 ? "空闲中" : (pile.State == 1 ? "使用中" : "已预约");
             console.log(pile);
             let html = `<div>
-                                                <div>
-                                                    <span style="font-weight:600;margin-right: 5px;">${pile.Name}</span>
-                                                </div>
-                                                <div style="display: flex;justify-content: space-between;align-items: center;">
-                                                    <span style="margin-right:10px;color:#999;font-size:13px;">NO.${pile.Id}</span>
-                                                    <button style="margin-right: -10px;font-size: 12px;padding: 3px 8px;" class="mui-btn-primary" onclick="StartNavigation(${pile.Longitude},${pile.Latitude})">去这里</button>
-                                                </div>
-                                            </div>`;
+                          <div>
+                              <span style="font-weight:600;margin-right: 5px;">${pile.Name}</span>
+                          </div>
+                          <div style="display: flex;justify-content: space-between;align-items: center;">
+                              <span style="margin-right:10px;color:#999;font-size:13px;">NO.${pile.Id}</span>
+                              <button style="margin-right: -10px;font-size: 12px;padding: 3px 8px;" class="mui-btn-primary" onclick="StartNavigation(${pile.Longitude},${pile.Latitude})">去这里</button>
+                          </div>
+                      </div>`;
             PilesInfoWindow.setContent(html);
 
             gdMap.setFitView(new AMap.Marker({ position: [pile.Longitude, pile.Latitude] }));
@@ -925,7 +933,7 @@
                 if (Strings.IsNulllOrEmpty(pile.StartTime) || Strings.IsNulllOrEmpty(pile.EndTime)) { time = ""; }
                 else { time = `${pile.StartTime} - ${pile.EndTime}`; }
                 SelectPile = pile;
-                SetListContent(pile.Id, pile.Name, pile.Price, pile.State, time);
+                SetListContent(pile.Id, pile.Name, pile.Price, pile.State, time, pile.UserId);
             }
         }
 
