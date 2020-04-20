@@ -17,12 +17,12 @@
     <script type="text/javascript" src="~/Static/mui/js/muiloading.js"></script>
     <script type="text/javascript" src="~/Static/mui/js/mui.picker.min.js"></script>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=4ab6fc6e84057a8a81334b9f605cb941"></script>
+    
 
     <script src="~/ViewScripts/Caches.js"></script>
     <script src="~/ViewScripts/Strings.js"></script>
 
     <style>
-
         #root {
             margin: 0;
             padding: 0;
@@ -166,6 +166,11 @@
             font-size: 30px;
         }
 
+        @@font-face {
+            font-family: 'Segoe MDL2 Assets';
+            src:url(/Static/Fonts/segmdl2.ttf);
+        }
+
         .cps-icon {
             font-family: 'Segoe MDL2 Assets';
             font-size: 20px;
@@ -228,7 +233,6 @@
 
         .amap-marker > .amap-icon > img {
             filter: drop-shadow(0 0 2px #333) drop-shadow(0 0 0px #333) drop-shadow(0 0 0px #333);
-            -webkit-filter: drop-shadow(0 0 2px #333) drop-shadow(0 0 0px #333) drop-shadow(0 0 0px #333);
         }
 
         .amap-info-close {

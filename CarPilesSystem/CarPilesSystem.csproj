@@ -198,6 +198,7 @@
     <Content Include="Views\Home\Piles.cshtml" />
     <Content Include="Views\Home\Pay.cshtml" />
     <Content Include="Views\Home\Personal.cshtml" />
+    <Content Include="Static\Fonts\segmdl2.ttf" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
